@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTableWidget>
+#include <QThread>
 
 namespace Ui {
 class MainWindow;
@@ -14,15 +16,17 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void updateMainWidgetSelection();
 
 private slots:
-    void handleProcessesButton();
+    void handleTabChange();
 
 private:
     Ui::MainWindow *ui;
-    int currentPane;
-    QWidget* widgetMainData;
+    QTabWidget* mainTabs;
+    QTableWidget* processesTable;
+    void createProcessesView();
+    /*QThread* processesThread;
+    bool processesThreadStarted;*/
 };
 
 #endif // MAINWINDOW_H

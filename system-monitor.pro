@@ -14,10 +14,9 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    processeswidget.cpp
+    processinformationworker.cpp
 
 HEADERS  += mainwindow.h \
-    processeswidget.h
+    processinformationworker.h
 
-FORMS    += mainwindow.ui \
-    processeswidget.ui
+FORMS    += mainwindow.ui

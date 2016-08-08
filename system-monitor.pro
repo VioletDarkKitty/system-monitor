@@ -1,0 +1,23 @@
+#-------------------------------------------------
+#
+# Project created by QtCreator 2016-08-08T12:24:53
+#
+#-------------------------------------------------
+
+QT       += core gui
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+TARGET = system-monitor
+TEMPLATE = app
+
+
+SOURCES += main.cpp\
+        mainwindow.cpp \
+    processeswidget.cpp
+
+HEADERS  += mainwindow.h \
+    processeswidget.h
+
+FORMS    += mainwindow.ui \
+    processeswidget.ui

@@ -21,4 +21,5 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui
 
-QMAKE_CXXFLAGS += -std=c++11 -pthread
+QMAKE_CXXFLAGS += -std=c++11 -Wall
+LIBS += -L"libprocps" -lprocps

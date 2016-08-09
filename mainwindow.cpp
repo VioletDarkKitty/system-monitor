@@ -4,6 +4,8 @@
 #include "processinformationworker.h"
 #include <chrono>
 #include <thread>
+#include <string>
+#include <pwd.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -16,6 +18,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     processesTable = mainTabs->findChild<QTableWidget*>("tableProcesses");
     processesThreadStarted = false;
+    processesThread = new processInformationWorker(this);
+    connect(processesThread, SIGNAL(updateProcessUI()), this,
+            SLOT(updateProcessInformation()));
 
     handleTabChange();
 }
@@ -23,13 +28,16 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete processesThread;
+    delete processesTable;
+    delete mainTabs;
 }
 
 void MainWindow::stopRunningProcessesThread()
 {
     if (processesThreadStarted) {
-        processesThread.quit();
-        while(processesThread.running()) {
+        processesThread->quit();
+        while(processesThread->running()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
         processesThreadStarted = false;
@@ -47,9 +55,9 @@ void MainWindow::createProcessesView()
 
     if (processesThreadStarted) {
         stopRunningProcessesThread();
-        processesThread.start();
+        processesThread->start();
     } else {
-        processesThread.start();
+        processesThread->start();
         processesThreadStarted = true;
     }
 }
@@ -74,3 +82,23 @@ void MainWindow::handleTabChange()
     }
 }
 
+void MainWindow::updateProcessInformation()
+{
+    std::vector<proc_t>* processes = processesThread->getProcesses();
+    processesTable->setRowCount(processes->size());
+    processesTable->clearContents();
+    for(unsigned int i=0; i<processes->size(); i++) {
+        proc_t* p = &(processes->at(i));
+        QString commandName = p->cmd;
+        processesTable->setItem(i,0,new QTableWidgetItem(commandName));
+        QString user = getpwuid(p->ruid)->pw_name;
+        processesTable->setItem(i,1,new QTableWidgetItem(user));
+        QString cpu = std::to_string(p->pcpu).c_str();
+        processesTable->setItem(i,2,new QTableWidgetItem(cpu));
+        QString id = std::to_string(p->tid).c_str();
+        processesTable->setItem(i,3,new QTableWidgetItem(id));
+        QString mem = std::to_string(p->vm_size).c_str();
+        processesTable->setItem(i,4,new QTableWidgetItem(mem));
+    }
+    processesTable->repaint();
+}

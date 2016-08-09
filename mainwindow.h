@@ -5,6 +5,8 @@
 #include <QTableWidget>
 #include <QThread>
 #include "processinformationworker.h"
+#include <proc/readproc.h>
+#include <vector>
 
 namespace Ui {
 class MainWindow;
@@ -15,18 +17,19 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    Ui::MainWindow *ui;
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
 private slots:
     void handleTabChange();
+    void updateProcessInformation();
 
 private:
-    Ui::MainWindow *ui;
     QTabWidget* mainTabs;
     QTableWidget* processesTable;
     void createProcessesView();
-    processInformationWorker processesThread;
+    processInformationWorker* processesThread;
     bool processesThreadStarted;
     void stopRunningProcessesThread();
 };

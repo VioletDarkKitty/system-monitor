@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <iostream>
+#include "processinformationworker.h"
+#include <chrono>
+#include <thread>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -12,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(mainTabs, SIGNAL(currentChanged(int)), this, SLOT(handleTabChange()));
 
     processesTable = mainTabs->findChild<QTableWidget*>("tableProcesses");
-    /*processesThreadStarted = false;*/
+    processesThreadStarted = false;
 
     handleTabChange();
 }
@@ -20,6 +23,17 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::stopRunningProcessesThread()
+{
+    if (processesThreadStarted) {
+        processesThread.quit();
+        while(processesThread.running()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+        processesThreadStarted = false;
+    }
 }
 
 void MainWindow::createProcessesView()
@@ -31,22 +45,27 @@ void MainWindow::createProcessesView()
     processesTable->setHorizontalHeaderLabels(QString("Process Name;User;% CPU;PID;Memory;").split(";"));
     processesTable->verticalHeader()->setVisible(false);
 
-    /*if (processesThreadStarted) {
-        processesThread->quit();
-        processesThread->wait();
+    if (processesThreadStarted) {
+        stopRunningProcessesThread();
+        processesThread.start();
     } else {
-        processesThread = new QThread();
+        processesThread.start();
         processesThreadStarted = true;
     }
-
-    connect(processesThread, SIGNAL(started()), this, SLOT(getProcessesInformation()));
-    processesThread->start();*/
 }
 
 void MainWindow::handleTabChange()
 {
     unsigned int index = mainTabs->currentIndex();
     switch(index) {
+        case 1:
+            stopRunningProcessesThread();
+        break;
+
+        case 2:
+            stopRunningProcessesThread();
+        break;
+
         case 0:
         default:
             // switched to processes tab

@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTableWidget>
 #include <QThread>
+#include "processinformationworker.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,8 +26,9 @@ private:
     QTabWidget* mainTabs;
     QTableWidget* processesTable;
     void createProcessesView();
-    /*QThread* processesThread;
-    bool processesThreadStarted;*/
+    processInformationWorker processesThread;
+    bool processesThreadStarted;
+    void stopRunningProcessesThread();
 };
 
 #endif // MAINWINDOW_H

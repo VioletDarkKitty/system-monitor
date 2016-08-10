@@ -24,6 +24,7 @@ public:
 private slots:
     void handleTabChange();
     void updateProcessInformation();
+    void handleProcessStop();
 
 private:
     QTabWidget* mainTabs;

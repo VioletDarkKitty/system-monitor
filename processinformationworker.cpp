@@ -41,7 +41,7 @@ void processInformationWorker::getProcessesInformation()
             //std::cout << "A" << std::endl;
 
             // from http://codingrelic.geekhold.com/2011/02/listing-processes-with-libproc.html
-            PROCTAB* proc = openproc(PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS);
+            PROCTAB* proc = openproc(PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_FILLUSR);
             // proc_info must be static! https://gitlab.com/procps-ng/procps/issues/33
             static proc_t proc_info;
             memset(&proc_info, 0, sizeof(proc_t));

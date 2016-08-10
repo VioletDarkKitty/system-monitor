@@ -84,9 +84,10 @@ void MainWindow::handleTabChange()
 
 void MainWindow::updateProcessInformation()
 {
+    processesThread->setPaused(true);
     std::vector<proc_t>* processes = processesThread->getProcesses();
     processesTable->setRowCount(processes->size());
-    processesTable->clearContents();
+    //processesTable->clearContents();
     for(unsigned int i=0; i<processes->size(); i++) {
         proc_t* p = &(processes->at(i));
         QString commandName = p->cmd;
@@ -101,4 +102,5 @@ void MainWindow::updateProcessInformation()
         processesTable->setItem(i,4,new QTableWidgetItem(mem));
     }
     processesTable->repaint();
+    processesThread->setPaused(false);
 }

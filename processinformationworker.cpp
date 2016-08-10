@@ -26,6 +26,7 @@ void processInformationWorker::start()
 void processInformationWorker::quit()
 {
     shouldQuit = true;
+    shouldPause = false;
 }
 
 bool processInformationWorker::running()

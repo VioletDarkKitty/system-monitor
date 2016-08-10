@@ -17,7 +17,8 @@ SOURCES += main.cpp\
     processinformationworker.cpp
 
 HEADERS  += mainwindow.h \
-    processinformationworker.h
+    processinformationworker.h \
+    tablenumberitem.h
 
 FORMS    += mainwindow.ui
 

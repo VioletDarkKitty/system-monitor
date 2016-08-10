@@ -6,6 +6,7 @@
 #include <thread>
 #include <string>
 #include <pwd.h>
+#include "tablenumberitem.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -52,6 +53,8 @@ void MainWindow::createProcessesView()
     //table->setHorizontalHeaderLabels(QString("HEADER 1;HEADER 2;HEADER 3").split(";"));
     processesTable->setHorizontalHeaderLabels(QString("Process Name;User;% CPU;PID;Memory;").split(";"));
     processesTable->verticalHeader()->setVisible(false);
+    processesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    processesTable->resizeColumnsToContents();
 
     if (processesThreadStarted) {
         stopRunningProcessesThread();
@@ -95,11 +98,11 @@ void MainWindow::updateProcessInformation()
         QString user = getpwuid(p->ruid)->pw_name;
         processesTable->setItem(i,1,new QTableWidgetItem(user));
         QString cpu = std::to_string(p->pcpu).c_str();
-        processesTable->setItem(i,2,new QTableWidgetItem(cpu));
+        processesTable->setItem(i,2,new TableNumberItem(cpu));
         QString id = std::to_string(p->tid).c_str();
-        processesTable->setItem(i,3,new QTableWidgetItem(id));
+        processesTable->setItem(i,3,new TableNumberItem(id));
         QString mem = std::to_string(p->vm_size).c_str();
-        processesTable->setItem(i,4,new QTableWidgetItem(mem));
+        processesTable->setItem(i,4,new TableNumberItem(mem));
     }
     processesTable->repaint();
     processesThread->setPaused(false);

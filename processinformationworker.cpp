@@ -5,36 +5,9 @@
 #include <exception>
 
 processInformationWorker::processInformationWorker(QObject *parent) :
-    QObject(parent)
-{
-    shouldQuit = false;
-    shouldPause = false;
-    workerThread = nullptr;
-}
+    QObject(parent), workerThread() {}
 
-void processInformationWorker::start()
-{
-    if (workerThread!=nullptr) {
-        throw std::exception();
-    }
-
-    workerThread = new std::thread(
-                &processInformationWorker::getProcessesInformation,this);
-    workerThread->detach();
-}
-
-void processInformationWorker::quit()
-{
-    shouldQuit = true;
-    shouldPause = false;
-}
-
-bool processInformationWorker::running()
-{
-    return (workerThread!=nullptr);
-}
-
-void processInformationWorker::getProcessesInformation()
+void processInformationWorker::run()
 {
     try {
         while(1) {
@@ -67,15 +40,8 @@ void processInformationWorker::getProcessesInformation()
             }
         }
     } catch (std::exception &e) {
-        shouldQuit = false;
-        delete workerThread;
-        workerThread = nullptr;
+        cleanupThread();
     }
-}
-
-void processInformationWorker::setPaused(bool pause)
-{
-    shouldPause = pause;
 }
 
 std::vector<proc_t>* processInformationWorker::getProcesses()

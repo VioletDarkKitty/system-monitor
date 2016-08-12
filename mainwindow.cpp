@@ -25,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(processesThread, SIGNAL(updateProcessUI()), this,
             SLOT(updateProcessInformation()));
 
+    resourcesThread = new resourcesWorker(this);
+
     QAction* actionStop = new QAction("Stop",processesTable);
     connect(actionStop,SIGNAL(triggered(bool)),SLOT(handleProcessStop()));
 
@@ -107,9 +109,11 @@ void MainWindow::handleProcessStop()
 void MainWindow::handleTabChange()
 {
     unsigned int index = mainTabs->currentIndex();
+    if (resourcesThread->running()){resourcesThread->quit();}
     switch(index) {
         case 1:
             stopRunningProcessesThread();
+            resourcesThread->start();
         break;
 
         case 2:

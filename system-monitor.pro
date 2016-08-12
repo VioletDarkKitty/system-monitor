@@ -14,11 +14,15 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    processinformationworker.cpp
+    processinformationworker.cpp \
+    workerthread.cpp \
+    resourcesworker.cpp
 
 HEADERS  += mainwindow.h \
     processinformationworker.h \
-    tablenumberitem.h
+    tablenumberitem.h \
+    workerthread.h \
+    resourcesworker.h
 
 FORMS    += mainwindow.ui
 

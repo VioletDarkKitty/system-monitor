@@ -5,6 +5,7 @@
 #include <QTableWidget>
 #include <QThread>
 #include "processinformationworker.h"
+#include "resourcesworker.h"
 #include <proc/readproc.h>
 #include <vector>
 
@@ -31,6 +32,7 @@ private:
     QTableWidget* processesTable;
     void createProcessesView();
     processInformationWorker* processesThread;
+    resourcesWorker* resourcesThread;
     bool processesThreadStarted;
     void stopRunningProcessesThread();
 };

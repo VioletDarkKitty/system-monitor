@@ -4,6 +4,7 @@
 #include <proc/readproc.h>
 #include <vector>
 #include "workerthread.h"
+#include <QTableWidget>
 
 class processInformationWorker : public QObject, public workerThread
 {
@@ -12,12 +13,17 @@ public:
     explicit processInformationWorker(QObject *parent = 0);
     std::vector<proc_t>* getProcesses();
 
+private slots:
+    void handleProcessStop();
+    void updateTable();
+
 signals:
-    void updateProcessUI();
+    void updateTableData();
 
 private:
-    void run();
-    std::vector<proc_t> procs;
+    void loop();
+    QTableWidget* processesTable;
+    void createProcessesView();
 };
 
 #endif // PROCESSINFORMATIONWORKER_H

@@ -57,43 +57,25 @@ resourcesWorker::memoryEntry resourcesWorker::convertMemoryUnit(double memory,
     return {memory, unit};
 }
 
-void resourcesWorker::run()
+void resourcesWorker::loop()
 {
-    try {
-        while(1) {
-            meminfo();
-            std::cout << kb_main_used << "/" << kb_main_total << std::endl;
-            double memory = ((double)kb_main_used / kb_main_total) * 100;
-            std::cout << memory << "%" << std::endl;
-            memoryBar->setValue(memory);
-            memoryEntry mainUsed = convertMemoryUnit(kb_main_used,kb);
-            memoryEntry mainTotal = convertMemoryUnit(kb_main_total,kb);
+    meminfo();
+    std::cout << kb_main_used << "/" << kb_main_total << std::endl;
+    double memory = ((double)kb_main_used / kb_main_total) * 100;
+    std::cout << memory << "%" << std::endl;
+    memoryBar->setValue(memory);
+    memoryEntry mainUsed = convertMemoryUnit(kb_main_used,kb);
+    memoryEntry mainTotal = convertMemoryUnit(kb_main_total,kb);
 
-            #define stripTrailing0s(x) x.erase(x.find_last_not_of('0')+1,std::string::npos);
-            std::string mainUsedValue = std::to_string(truncateDouble(mainUsed.id,1));
-            stripTrailing0s(mainUsedValue);
-            std::string mainTotalValue = std::to_string(truncateDouble(mainTotal.id,1));
-            stripTrailing0s(mainTotalValue);
-            std::string memPercent = std::to_string(truncateDouble(memory,1));
-            stripTrailing0s(memPercent);
+    #define stripTrailing0s(x) x.erase(x.find_last_not_of('0')+1,std::string::npos);
+    std::string mainUsedValue = std::to_string(truncateDouble(mainUsed.id,1));
+    stripTrailing0s(mainUsedValue);
+    std::string mainTotalValue = std::to_string(truncateDouble(mainTotal.id,1));
+    stripTrailing0s(mainTotalValue);
+    std::string memPercent = std::to_string(truncateDouble(memory,1));
+    stripTrailing0s(memPercent);
 
-            std::string memoryText = mainUsedValue + unitToString(mainUsed.unit)
-                    + " (" + memPercent + "%) of " + mainTotalValue + unitToString(mainTotal.unit);
-            memoryLabel->setText(memoryText.c_str());
-
-            emit(updateResourcesUI());
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-            while(shouldPause) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-
-            if (shouldQuit) {
-                throw std::exception();
-            }
-        }
-    } catch (std::exception &e) {
-        cleanupThread();
-    }
+    std::string memoryText = mainUsedValue + unitToString(mainUsed.unit)
+            + " (" + memPercent + "%) of " + mainTotalValue + unitToString(mainTotal.unit);
+    memoryLabel->setText(memoryText.c_str());
 }

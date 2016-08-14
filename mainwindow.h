@@ -2,13 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QTableWidget>
-#include <QThread>
 #include "processinformationworker.h"
 #include "resourcesworker.h"
-#include <proc/readproc.h>
-#include <vector>
-
 namespace Ui {
 class MainWindow;
 }
@@ -24,17 +19,11 @@ public:
 
 private slots:
     void handleTabChange();
-    void updateProcessInformation();
-    void handleProcessStop();
 
 private:
-    QTabWidget* mainTabs;
-    QTableWidget* processesTable;
-    void createProcessesView();
     processInformationWorker* processesThread;
     resourcesWorker* resourcesThread;
-    bool processesThreadStarted;
-    void stopRunningProcessesThread();
+    QTabWidget* mainTabs;
 };
 
 #endif // MAINWINDOW_H

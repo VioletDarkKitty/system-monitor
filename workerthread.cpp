@@ -26,7 +26,7 @@ void workerThread::quit()
 
 bool workerThread::running()
 {
-    return (workerThreadThread!=nullptr);
+    return (workerThreadThread!=nullptr) && !shouldPause;
 }
 
 void workerThread::setPaused(bool pause)
@@ -34,9 +34,25 @@ void workerThread::setPaused(bool pause)
     shouldPause = pause;
 }
 
-void workerThread::cleanupThread()
+void workerThread::run()
 {
-    shouldQuit = false;
-    delete workerThreadThread;
-    workerThreadThread = nullptr;
+    try {
+        while(1) {
+            loop();
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+            while(shouldPause) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+
+            if (shouldQuit) {
+                throw std::exception();
+            }
+        }
+    } catch (std::exception &e) {
+        shouldQuit = false;
+        delete workerThreadThread;
+        workerThreadThread = nullptr;
+    }
 }

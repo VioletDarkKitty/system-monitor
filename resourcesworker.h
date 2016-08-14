@@ -25,12 +25,8 @@ public:
       {3, gb},
       {4, tb}
     };
-
-signals:
-    void updateResourcesUI();
-
 private:
-    void run();
+    void loop();
     QProgressBar* memoryBar, swapBar;
     QLabel* memoryLabel;
     int memoryLookupLength = sizeof(memoryLookup) / sizeof(memoryEntry);

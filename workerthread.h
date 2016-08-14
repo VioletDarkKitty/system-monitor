@@ -9,13 +9,12 @@ public:
     void quit();
     void start();
     bool running();
-    void setPaused(bool pause);
-protected:
+    void setPaused(bool pause);    
+private:
     bool shouldQuit;
     bool shouldPause;
-    void cleanupThread();
-private:
-    virtual void run(){}
+    void run();
+    virtual void loop(){}
     std::thread* workerThreadThread;
 };
 

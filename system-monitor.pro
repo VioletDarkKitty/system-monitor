@@ -16,13 +16,16 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     processinformationworker.cpp \
     workerthread.cpp \
-    resourcesworker.cpp
+    resourcesworker.cpp \
+    memoryconversion.cpp
 
 HEADERS  += mainwindow.h \
     processinformationworker.h \
     tablenumberitem.h \
     workerthread.h \
-    resourcesworker.h
+    resourcesworker.h \
+    memoryconversion.h \
+    tablememoryitem.h
 
 FORMS    += mainwindow.ui
 

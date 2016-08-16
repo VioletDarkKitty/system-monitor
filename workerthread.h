@@ -6,6 +6,7 @@ class workerThread
 {
 public:
     workerThread();
+    virtual ~workerThread();
     void quit();
     void start();
     bool running();

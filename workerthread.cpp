@@ -7,6 +7,11 @@ workerThread::workerThread()
     workerThreadThread = nullptr;
 }
 
+workerThread::~workerThread()
+{
+    delete workerThreadThread;
+}
+
 void workerThread::start()
 {
     if (workerThreadThread!=nullptr) {

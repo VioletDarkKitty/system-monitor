@@ -81,24 +81,6 @@
         <string>Resources</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="3" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Swap</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QProgressBar" name="swapBar">
-            <property name="value">
-             <number>24</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
         <item row="0" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
@@ -157,6 +139,35 @@
              </size>
             </property>
            </spacer>
+          </item>
+         </layout>
+        </item>
+        <item row="4" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Swap</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QProgressBar" name="swapBar">
+              <property name="value">
+               <number>24</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="swapLabel">
+            <property name="text">
+             <string>TextLabel</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>

@@ -11,6 +11,8 @@
 #include <signal.h>
 #include <QMessageBox>
 #include <QHeaderView>
+#include "tablememoryitem.h"
+#include "memoryconversion.h"
 
 processInformationWorker::processInformationWorker(QObject *parent) :
     QObject(parent), workerThread() {
@@ -100,8 +102,8 @@ void processInformationWorker::updateTable() {
         processesTable->setItem(i,2,new TableNumberItem(cpu));
         QString id = std::to_string(p->tid).c_str();
         processesTable->setItem(i,3,new TableNumberItem(id));
-        QString mem = std::to_string(p->vm_data).c_str();
-        processesTable->setItem(i,4,new TableNumberItem(mem));
+        memoryEntry memory = convertMemoryUnit(p->vm_rss,kb);
+        processesTable->setItem(i,4,new TableMemoryItem(memory.unit,truncateDouble(memory.id,1)));
     }
     processesTable->setUpdatesEnabled(true);
     processesTable->setSortingEnabled(true);

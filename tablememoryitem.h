@@ -7,25 +7,28 @@ using namespace memoryConversion;
 class TableMemoryItem : public QTableWidgetItem
 {
 public:
-    TableMemoryItem(memoryUnit u=b, double v=0)
+    TableMemoryItem(memoryUnit u=memoryUnit::b, double v=0)
         :QTableWidgetItem(calculateTxt(u,v))
     {
         if (v==0) {
             // if we set the string as N/A using calculateTxt, set the unit
             // to be as low as possible
-            unit = b; // the lowest enum value
+            unit = memoryUnit::b; // the lowest enum value
+        } else {
+            unit = u;
         }
         value = v;
     }
-    bool operator <(const TableMemoryItem &other) const
+    bool operator <(const QTableWidgetItem &other) const
     {
         // return true if other is greater than this
-        //TableMemoryItem& otherMemoryItem = dynamic_cast<TableMemoryItem&>(other);
-        memoryUnit otherUnit = other.unit;
-        double otherValue = other.value;
+        if (other.text() == "N/A") { return false; }
+        const TableMemoryItem& otherMemoryItem = dynamic_cast<const TableMemoryItem&>(other);
+        memoryUnit otherUnit = otherMemoryItem.unit;
+        double otherValue = otherMemoryItem.value;
 
-        if (unit < otherUnit) { return true; }
-        if (unit > otherUnit) { return false; }
+        if (lookupUnit(unit) < lookupUnit(otherUnit)) { return true; }
+        if (lookupUnit(unit) > lookupUnit(otherUnit)) { return false; }
         // must be equal, return the bigger of the 2 values
 
         return value < otherValue;
@@ -34,7 +37,7 @@ protected:
     memoryUnit unit;
     double value;
 private:
-    static QString calculateTxt(memoryUnit u=b, double v=0) {
+    static QString calculateTxt(memoryUnit u=memoryUnit::b, double v=0) {
         // used for setting the string shown in the table
         // a value of 0 means we can't read it so show N/A like gnome does
         if (v>0.0) {

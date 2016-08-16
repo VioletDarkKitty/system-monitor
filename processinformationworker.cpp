@@ -102,7 +102,7 @@ void processInformationWorker::updateTable() {
         processesTable->setItem(i,2,new TableNumberItem(cpu));
         QString id = std::to_string(p->tid).c_str();
         processesTable->setItem(i,3,new TableNumberItem(id));
-        memoryEntry memory = convertMemoryUnit(p->vm_rss,kb);
+        memoryEntry memory = convertMemoryUnit(p->vm_rss,memoryUnit::kb);
         processesTable->setItem(i,4,new TableMemoryItem(memory.unit,truncateDouble(memory.id,1)));
     }
     processesTable->setUpdatesEnabled(true);

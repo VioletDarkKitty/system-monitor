@@ -31,8 +31,8 @@ void resourcesWorker::loop()
     /** MEMORY **/
     double memory = ((double)kb_main_used / kb_main_total) * 100;
     memoryBar->setValue(memory);
-    memoryEntry mainUsed = convertMemoryUnit(kb_main_used,kb);
-    memoryEntry mainTotal = convertMemoryUnit(kb_main_total,kb);
+    memoryEntry mainUsed = convertMemoryUnit(kb_main_used,memoryUnit::kb);
+    memoryEntry mainTotal = convertMemoryUnit(kb_main_total,memoryUnit::kb);
 
     // cleanup the memory values
     std::string mainUsedValue = std::to_string(truncateDouble(mainUsed.id,1));
@@ -49,8 +49,8 @@ void resourcesWorker::loop()
     /** SWAP **/
     double swap = ((double)kb_swap_used / kb_swap_total) * 100;
     swapBar->setValue(swap);
-    memoryEntry swapUsed = convertMemoryUnit(kb_swap_used,kb);
-    memoryEntry swapTotal = convertMemoryUnit(kb_swap_total,kb);
+    memoryEntry swapUsed = convertMemoryUnit(kb_swap_used,memoryUnit::kb);
+    memoryEntry swapTotal = convertMemoryUnit(kb_swap_total,memoryUnit::kb);
 
     // cleanup the swap values
     std::string swapUsedValue = std::to_string(truncateDouble(swapUsed.id,1));

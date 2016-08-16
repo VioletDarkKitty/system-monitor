@@ -2,11 +2,11 @@
 
 namespace memoryConversion {
     const memoryEntry memoryLookup[memoryLookupLength] = {
-      {0, b},
-      {1, kb},
-      {2, mb},
-      {3, gb},
-      {4, tb}
+      {0, memoryUnit::b},
+      {1, memoryUnit::kb},
+      {2, memoryUnit::mb},
+      {3, memoryUnit::gb},
+      {4, memoryUnit::tb}
     };
 
     int lookupUnit(memoryUnit unit) {
@@ -64,7 +64,7 @@ namespace memoryConversion {
     {
         if (memory < (1/kb)) {
             // too small for the unit it's in
-            while(memory < (1/kb) && unit != b) {
+            while(memory < (1/kb) && unit != memoryUnit::b) {
                 memory *= kb;
                 unit = prevMemoryUnit(unit);
             }

@@ -7,7 +7,7 @@
 namespace memoryConversion {
 #define stripTrailing0s(x) x.erase(x.find_last_not_of('0')+1,std::string::npos);
 #define memoryLookupLength 5
-enum memoryUnit {b = 0, kb, mb, gb, tb};
+enum class memoryUnit {b = 0, kb, mb, gb, tb};
 struct memoryEntry {
     double id;
     memoryUnit unit;

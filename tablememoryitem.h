@@ -41,10 +41,7 @@ private:
         // used for setting the string shown in the table
         // a value of 0 means we can't read it so show N/A like gnome does
         if (v>0.0) {
-            std::string temp = std::to_string(v);
-            stripTrailing0s(temp);
-            temp += " " + unitToString(u);
-            return temp.c_str();
+            return  (dbl2str(v) + " " + unitToString(u)).c_str();
         }
         return "N/A";
     }

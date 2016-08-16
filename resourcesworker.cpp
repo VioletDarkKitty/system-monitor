@@ -35,12 +35,9 @@ void resourcesWorker::loop()
     memoryEntry mainTotal = convertMemoryUnit(kb_main_total,memoryUnit::kb);
 
     // cleanup the memory values
-    std::string mainUsedValue = std::to_string(truncateDouble(mainUsed.id,1));
-    stripTrailing0s(mainUsedValue);
-    std::string mainTotalValue = std::to_string(truncateDouble(mainTotal.id,1));
-    stripTrailing0s(mainTotalValue);
-    std::string memPercent = std::to_string(truncateDouble(memory,1));
-    stripTrailing0s(memPercent);
+    std::string mainUsedValue =  dbl2str(truncateDouble(mainUsed.id,1));
+    std::string mainTotalValue = dbl2str(truncateDouble(mainTotal.id,1));
+    std::string memPercent = dbl2str(truncateDouble(memory,1));
 
     std::string memoryText = mainUsedValue + unitToString(mainUsed.unit)
             + " (" + memPercent + "%) of " + mainTotalValue + unitToString(mainTotal.unit);
@@ -53,12 +50,9 @@ void resourcesWorker::loop()
     memoryEntry swapTotal = convertMemoryUnit(kb_swap_total,memoryUnit::kb);
 
     // cleanup the swap values
-    std::string swapUsedValue = std::to_string(truncateDouble(swapUsed.id,1));
-    stripTrailing0s(swapUsedValue);
-    std::string swapTotalValue = std::to_string(truncateDouble(swapTotal.id,1));
-    stripTrailing0s(swapTotalValue);
-    std::string swapPercent = std::to_string(truncateDouble(swap,1));
-    stripTrailing0s(swapPercent);
+    std::string swapUsedValue = dbl2str(truncateDouble(swapUsed.id,1));
+    std::string swapTotalValue = dbl2str(truncateDouble(swapTotal.id,1));
+    std::string swapPercent = dbl2str(truncateDouble(swap,1));
 
     std::string swapText = swapUsedValue + unitToString(swapUsed.unit)
             + " (" + swapPercent + "%) of " + swapTotalValue + unitToString(swapTotal.unit);

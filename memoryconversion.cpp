@@ -79,4 +79,21 @@ namespace memoryConversion {
         }
         return {memory, unit};
     }
+
+    std::string dbl2str(double d) // from http://stackoverflow.com/questions/15165502/double-to-string-without-scientific-notation-or-trailing-zeros-efficiently
+    {
+        size_t len = std::snprintf(0, 0, "%.10f", d);
+        std::string s(len+1, 0);
+        // technically non-portable, see below
+        std::snprintf(&s[0], len+1, "%.10f", d);
+        // remove nul terminator
+        s.pop_back();
+        // remove trailing zeros
+        s.erase(s.find_last_not_of('0') + 1, std::string::npos);
+        // remove trailing point
+        if(s.back() == '.') {
+            s.pop_back();
+        }
+        return s;
+    }
 }

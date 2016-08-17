@@ -5,6 +5,7 @@
 #include <vector>
 #include "workerthread.h"
 #include <QTableWidget>
+#include <QCheckBox>
 
 class processInformationWorker : public QObject, public workerThread
 {
@@ -24,6 +25,7 @@ private:
     void loop();
     QTableWidget* processesTable;
     void createProcessesView();
+    QCheckBox* filterCheckbox;
 };
 
 #endif // PROCESSINFORMATIONWORKER_H

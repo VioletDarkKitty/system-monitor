@@ -11,6 +11,11 @@ class resourcesWorker : public QObject, public workerThread
 public:
     explicit resourcesWorker(QObject *parent = 0);
     virtual ~resourcesWorker();
+signals:
+    void updateMemoryBar(int value);
+    void updateMemoryText(QString value);
+    void updateSwapBar(int value);
+    void updateSwapText(QString value);
 private:
     void loop();
     QProgressBar *memoryBar, *swapBar;

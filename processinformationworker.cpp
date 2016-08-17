@@ -13,6 +13,7 @@
 #include <QHeaderView>
 #include "tablememoryitem.h"
 #include "memoryconversion.h"
+#include <unistd.h>
 
 processInformationWorker::processInformationWorker(QObject *parent) :
     QObject(parent), workerThread() {
@@ -29,6 +30,8 @@ processInformationWorker::processInformationWorker(QObject *parent) :
 
     processesTable->setContextMenuPolicy(Qt::ActionsContextMenu);
     processesTable->addActions(rightClickActions);
+
+    filterCheckbox = mainTabs->findChild<QCheckBox*>("processesFilterCheckbox");
 
     connect(this,SIGNAL(updateTableData()),SLOT(updateTable()));
 
@@ -91,7 +94,6 @@ void processInformationWorker::updateTable() {
     processesTable->setUpdatesEnabled(false); // avoid inconsistant data
     processesTable->setSortingEnabled(false);
     processesTable->setRowCount(processes.size());
-    //processesTable->clearContents();
     for(unsigned int i=0; i<processes.size(); i++) {
         proc_t* p = &(processes.at(i));
         QString commandName = p->cmd;
@@ -104,6 +106,16 @@ void processInformationWorker::updateTable() {
         processesTable->setItem(i,3,new TableNumberItem(id));
         memoryEntry memory = convertMemoryUnit(p->vm_rss,memoryUnit::kb);
         processesTable->setItem(i,4,new TableMemoryItem(memory.unit,truncateDouble(memory.id,1)));
+        processesTable->showRow(i);
+
+        if (filterCheckbox->checkState() == Qt::CheckState::Checked) {
+            // if the filter checkbox is checked, we need to make sure that the
+            // user who owns the process is the same as the user running us
+            if ((unsigned)p->euid != geteuid()) {
+                // hide this row
+                processesTable->hideRow(i);
+            }
+        }
     }
     processesTable->setUpdatesEnabled(true);
     processesTable->setSortingEnabled(true);

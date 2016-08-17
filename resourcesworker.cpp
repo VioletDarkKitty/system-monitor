@@ -12,6 +12,11 @@ resourcesWorker::resourcesWorker(QObject *parent)
     memoryLabel = parent->findChild<QLabel*>("memoryLabel");
     swapBar = parent->findChild<QProgressBar*>("swapBar");
     swapLabel = parent->findChild<QLabel*>("swapLabel");
+
+    connect(this,SIGNAL(updateMemoryBar(int)),memoryBar,SLOT(setValue(int)));
+    connect(this,SIGNAL(updateMemoryText(QString)),memoryLabel,SLOT(setText(QString)));
+    connect(this,SIGNAL(updateSwapBar(int)),swapBar,SLOT(setValue(int)));
+    connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));
 }
 
 resourcesWorker::~resourcesWorker()
@@ -30,7 +35,8 @@ void resourcesWorker::loop()
 
     /** MEMORY **/
     double memory = ((double)kb_main_used / kb_main_total) * 100;
-    memoryBar->setValue(memory);
+    emit(updateMemoryBar(memory));
+
     memoryEntry mainUsed = convertMemoryUnit(kb_main_used,memoryUnit::kb);
     memoryEntry mainTotal = convertMemoryUnit(kb_main_total,memoryUnit::kb);
 
@@ -41,11 +47,11 @@ void resourcesWorker::loop()
 
     std::string memoryText = mainUsedValue + unitToString(mainUsed.unit)
             + " (" + memPercent + "%) of " + mainTotalValue + unitToString(mainTotal.unit);
-    memoryLabel->setText(memoryText.c_str());
+    emit(updateMemoryText(memoryText.c_str()));
 
     /** SWAP **/
     double swap = ((double)kb_swap_used / kb_swap_total) * 100;
-    swapBar->setValue(swap);
+    emit(updateSwapBar(swap));
     memoryEntry swapUsed = convertMemoryUnit(kb_swap_used,memoryUnit::kb);
     memoryEntry swapTotal = convertMemoryUnit(kb_swap_total,memoryUnit::kb);
 
@@ -56,5 +62,5 @@ void resourcesWorker::loop()
 
     std::string swapText = swapUsedValue + unitToString(swapUsed.unit)
             + " (" + swapPercent + "%) of " + swapTotalValue + unitToString(swapTotal.unit);
-    swapLabel->setText(swapText.c_str());
+    emit(updateSwapText(swapText.c_str()));
 }

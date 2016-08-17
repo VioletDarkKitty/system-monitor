@@ -92,13 +92,13 @@ void processInformationWorker::filterProcesses(QString filter)
 {
     // loop over the table and hide items which do not match the search term given
     // only check col 0 (process name)
-    for(int i = 0; i < processesTable->rowCount(); ++i)
+    for(int i = 0; i < processesTable->rowCount(); i++)
     {
         // check if the row is already hidden, if so, skip it
         /// TODO: find a better fix for this, can't check using QTableWidget
         /// so just check the PID manually
 
-        if (!shouldHideProcess(processesTable->item(i,3)->text().toUInt())) {
+        if (!shouldHideProcess(getpwnam(processesTable->item(i,1)->text().toStdString().c_str())->pw_uid)) {
             QTableWidgetItem* item = processesTable->item(i,0); // process name
             processesTable->setRowHidden(i, !(item->text().contains(filter)));
         }

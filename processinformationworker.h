@@ -30,6 +30,7 @@ private:
     QCheckBox* filterCheckbox;
     QLineEdit* searchField;
     bool shouldHideProcess(unsigned int pid);
+    std::string getProcessNameFromPID(unsigned int pid);
 };
 
 #endif // PROCESSINFORMATIONWORKER_H

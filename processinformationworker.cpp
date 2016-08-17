@@ -14,6 +14,7 @@
 #include "tablememoryitem.h"
 #include "memoryconversion.h"
 #include <unistd.h>
+#include <experimental/filesystem>
 
 processInformationWorker::processInformationWorker(QObject *parent) :
     QObject(parent), workerThread() {
@@ -105,6 +106,22 @@ void processInformationWorker::filterProcesses(QString filter)
     }
 }
 
+std::string processInformationWorker::getProcessNameFromPID(unsigned int pid)
+{
+    std::string path = "/proc/"+std::to_string(pid)+"/cmdline";
+    FILE *fp = fopen(path.c_str(), "r");
+    if (fp==NULL) {
+        return "ERROR READING PROC";
+    }
+    char buff[255];
+    fgets(buff, 255, fp);
+    fclose(fp);
+
+    std::string temp = buff;
+    if (temp.find_first_of('/')==temp.npos) { return ""; }
+    return std::experimental::filesystem::path(temp).filename();
+}
+
 void processInformationWorker::updateTable() {
     // from http://codingrelic.geekhold.com/2011/02/listing-processes-with-libproc.html
     PROCTAB* proc = openproc(PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_FILLUSR);
@@ -126,8 +143,8 @@ void processInformationWorker::updateTable() {
     processesTable->setRowCount(processes.size());
     for(unsigned int i=0; i<processes.size(); i++) {
         proc_t* p = &(processes.at(i));
-        QString commandName = p->cmd;
-        processesTable->setItem(i,0,new QTableWidgetItem(commandName));
+        std::string processName = getProcessNameFromPID(p->tid);
+        processesTable->setItem(i,0,new QTableWidgetItem(processName!=""? processName.c_str():p->cmd));
         QString user = p->euser;
         processesTable->setItem(i,1,new QTableWidgetItem(user));
         QString cpu = std::to_string(p->pcpu).c_str();

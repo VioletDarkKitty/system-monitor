@@ -43,7 +43,7 @@
         <item row="0" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QLineEdit" name="lineEdit">
+           <widget class="QLineEdit" name="processesSearchField">
             <property name="placeholderText">
              <string>Search</string>
             </property>

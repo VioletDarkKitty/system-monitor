@@ -32,9 +32,12 @@ processInformationWorker::processInformationWorker(QObject *parent) :
     processesTable->addActions(rightClickActions);
 
     filterCheckbox = mainTabs->findChild<QCheckBox*>("processesFilterCheckbox");
+    searchField = mainTabs->findChild<QLineEdit*>("processesSearchField");
+
+    connect(searchField,SIGNAL(textChanged(QString)),this,SLOT(filterProcesses(QString)));
+    connect(this,SIGNAL(signalFilterProcesses(QString)),this,SLOT(filterProcesses(QString)));
 
     connect(this,SIGNAL(updateTableData()),SLOT(updateTable()));
-
     createProcessesView();
 }
 
@@ -75,6 +78,33 @@ void processInformationWorker::handleProcessStop()
     }
 }
 
+bool processInformationWorker::shouldHideProcess(unsigned int pid)
+{
+    if (filterCheckbox->checkState() == Qt::CheckState::Checked) {
+        // if the filter checkbox is checked, we need to make sure that the
+        // user who owns the process is the same as the user running us
+        return (pid != geteuid());
+    }
+    return false;
+}
+
+void processInformationWorker::filterProcesses(QString filter)
+{
+    // loop over the table and hide items which do not match the search term given
+    // only check col 0 (process name)
+    for(int i = 0; i < processesTable->rowCount(); ++i)
+    {
+        // check if the row is already hidden, if so, skip it
+        /// TODO: find a better fix for this, can't check using QTableWidget
+        /// so just check the PID manually
+
+        if (!shouldHideProcess(processesTable->item(i,3)->text().toUInt())) {
+            QTableWidgetItem* item = processesTable->item(i,0); // process name
+            processesTable->setRowHidden(i, !(item->text().contains(filter)));
+        }
+    }
+}
+
 void processInformationWorker::updateTable() {
     // from http://codingrelic.geekhold.com/2011/02/listing-processes-with-libproc.html
     PROCTAB* proc = openproc(PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_FILLUSR);
@@ -108,17 +138,14 @@ void processInformationWorker::updateTable() {
         processesTable->setItem(i,4,new TableMemoryItem(memory.unit,truncateDouble(memory.id,1)));
         processesTable->showRow(i);
 
-        if (filterCheckbox->checkState() == Qt::CheckState::Checked) {
-            // if the filter checkbox is checked, we need to make sure that the
-            // user who owns the process is the same as the user running us
-            if ((unsigned)p->euid != geteuid()) {
-                // hide this row
-                processesTable->hideRow(i);
-            }
+        if (shouldHideProcess(p->euid)) {
+            // hide this row
+            processesTable->hideRow(i);
         }
     }
     processesTable->setUpdatesEnabled(true);
     processesTable->setSortingEnabled(true);
+    emit(signalFilterProcesses(searchField->text()));
 }
 
 void processInformationWorker::loop()

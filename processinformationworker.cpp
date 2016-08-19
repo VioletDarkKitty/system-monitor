@@ -1,8 +1,5 @@
 #include "processinformationworker.h"
 #include <iostream>
-#include <chrono>
-#include <thread>
-#include <exception>
 #include <QTabWidget>
 #include <QAction>
 #include <string>
@@ -15,6 +12,7 @@
 #include "memoryconversion.h"
 #include <unistd.h>
 #include <experimental/filesystem>
+#include <fstream>
 
 processInformationWorker::processInformationWorker(QObject *parent) :
     QObject(parent), workerThread() {
@@ -108,17 +106,20 @@ void processInformationWorker::filterProcesses(QString filter)
 
 std::string processInformationWorker::getProcessNameFromPID(unsigned int pid)
 {
-    std::string path = "/proc/"+std::to_string(pid)+"/cmdline";
-    FILE *fp = fopen(path.c_str(), "r");
-    if (fp==NULL) {
-        return "ERROR READING PROC";
+    std::string temp;
+    try {
+        std::fstream fs;
+        fs.open ("/proc/"+std::to_string(pid)+"/cmdline", std::fstream::in);
+        fs >> temp;
+        fs.close();
+    } catch(std::ifstream::failure e) {
+        return "FAILED TO READ PROC";
     }
-    char buff[255];
-    fgets(buff, 255, fp);
-    fclose(fp);
 
-    std::string temp = buff;
-    if (temp.find_first_of('/')==temp.npos) { return ""; }
+    if (temp.size()<1) {
+        return "";
+    }
+
     return std::experimental::filesystem::path(temp).filename();
 }
 
@@ -151,7 +152,10 @@ void processInformationWorker::updateTable() {
         processesTable->setItem(i,2,new TableNumberItem(cpu));
         QString id = std::to_string(p->tid).c_str();
         processesTable->setItem(i,3,new TableNumberItem(id));
-        memoryEntry memory = convertMemoryUnit(p->vm_rss,memoryUnit::kb);
+        // gnome-system-monitor measures memory as RSS - shared
+        // shared memory is only given as # pages, sysconf(_SC_PAGES) is in bytes
+        // so do, (#pages RSS - #pages Share) * _SC_PAGES
+        memoryEntry memory = convertMemoryUnit((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b);
         processesTable->setItem(i,4,new TableMemoryItem(memory.unit,truncateDouble(memory.id,1)));
         processesTable->showRow(i);
 

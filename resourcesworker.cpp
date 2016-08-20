@@ -50,19 +50,26 @@ void resourcesWorker::loop()
     emit(updateMemoryText(memoryText.c_str()));
 
     /** SWAP **/
-    double swap = ((double)kb_swap_used / kb_swap_total) * 100;
-    emit(updateSwapBar(swap));
-    memoryEntry swapUsed = convertMemoryUnit(kb_swap_used,memoryUnit::kb);
-    memoryEntry swapTotal = convertMemoryUnit(kb_swap_total,memoryUnit::kb);
+    if (kb_swap_total > 0.0) {
+        // swap is active
+        double swap = ((double)kb_swap_used / kb_swap_total) * 100;
+        emit(updateSwapBar(swap));
+        memoryEntry swapUsed = convertMemoryUnit(kb_swap_used,memoryUnit::kb);
+        memoryEntry swapTotal = convertMemoryUnit(kb_swap_total,memoryUnit::kb);
 
-    // cleanup the swap values
-    std::string swapUsedValue = dbl2str(truncateDouble(swapUsed.id,1));
-    std::string swapTotalValue = dbl2str(truncateDouble(swapTotal.id,1));
-    std::string swapPercent = dbl2str(truncateDouble(swap,1));
+        // cleanup the swap values
+        std::string swapUsedValue = dbl2str(truncateDouble(swapUsed.id,1));
+        std::string swapTotalValue = dbl2str(truncateDouble(swapTotal.id,1));
+        std::string swapPercent = dbl2str(truncateDouble(swap,1));
 
-    std::string swapText = swapUsedValue + unitToString(swapUsed.unit)
-            + " (" + swapPercent + "%) of " + swapTotalValue + unitToString(swapTotal.unit);
-    emit(updateSwapText(swapText.c_str()));
+        std::string swapText = swapUsedValue + unitToString(swapUsed.unit)
+                + " (" + swapPercent + "%) of " + swapTotalValue + unitToString(swapTotal.unit);
+        emit(updateSwapText(swapText.c_str()));
+    } else {
+        // there is no swap
+        emit(updateSwapBar(0));
+        emit(updateSwapText("Not Available"));
+    }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }

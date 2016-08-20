@@ -45,8 +45,6 @@ void workerThread::run()
         while(1) {
             loop();
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
             while(shouldPause) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }

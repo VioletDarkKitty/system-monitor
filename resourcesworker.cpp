@@ -63,4 +63,6 @@ void resourcesWorker::loop()
     std::string swapText = swapUsedValue + unitToString(swapUsed.unit)
             + " (" + swapPercent + "%) of " + swapTotalValue + unitToString(swapTotal.unit);
     emit(updateSwapText(swapText.c_str()));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }

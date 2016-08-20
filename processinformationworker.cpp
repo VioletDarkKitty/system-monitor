@@ -19,6 +19,8 @@ processInformationWorker::processInformationWorker(QObject *parent) :
     QTabWidget* mainTabs = parent->findChild<QTabWidget*>("tabWidgetMain");
     processesTable = mainTabs->findChild<QTableWidget*>("tableProcesses");
 
+    total_cpu_time = 0;
+
     QAction* actionStop = new QAction("Stop",processesTable);
     connect(actionStop,SIGNAL(triggered(bool)),SLOT(handleProcessStop()));
 
@@ -36,7 +38,7 @@ processInformationWorker::processInformationWorker(QObject *parent) :
     connect(searchField,SIGNAL(textChanged(QString)),this,SLOT(filterProcesses(QString)));
     connect(this,SIGNAL(signalFilterProcesses(QString)),this,SLOT(filterProcesses(QString)));
 
-    connect(this,SIGNAL(updateTableData()),SLOT(updateTable()));
+    connect(this,SIGNAL(updateTableData()),SLOT(updateTable()));    
     createProcessesView();
 }
 
@@ -123,46 +125,96 @@ std::string processInformationWorker::getProcessNameFromPID(unsigned int pid)
     return std::experimental::filesystem::path(temp).filename();
 }
 
+unsigned long long processInformationWorker::getTotalCpuTime()
+{
+    // from https://github.com/scaidermern/top-processes/blob/master/top_proc.c#L54
+    FILE* file = fopen("/proc/stat", "r");
+    if (file == NULL) {
+        perror("Could not open stat file");
+        return 0;
+    }
+
+    char buffer[1024];
+    unsigned long long user = 0, nice = 0, system = 0, idle = 0;
+    // added between Linux 2.5.41 and 2.6.33, see man proc(5)
+    unsigned long long iowait = 0, irq = 0, softirq = 0, steal = 0, guest = 0, guestnice = 0;
+
+    char* ret = fgets(buffer, sizeof(buffer) - 1, file);
+    if (ret == NULL) {
+        perror("Could not read stat file");
+        fclose(file);
+        return 0;
+    }
+    fclose(file);
+
+    sscanf(buffer,
+           "cpu  %16llu %16llu %16llu %16llu %16llu %16llu %16llu %16llu %16llu %16llu",
+           &user, &nice, &system, &idle, &iowait, &irq, &softirq, &steal, &guest, &guestnice);
+
+    // sum everything up (except guest and guestnice since they are already included
+    // in user and nice, see http://unix.stackexchange.com/q/178045/20626)
+    return user + nice + system + idle + iowait + irq + softirq + steal;
+}
+
 void processInformationWorker::updateTable() {
     // from http://codingrelic.geekhold.com/2011/02/listing-processes-with-libproc.html
-    PROCTAB* proc = openproc(PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_FILLUSR);
+    PROCTAB* proc = openproc(PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_FILLUSR | PROC_FILLCOM);
     // proc_info must be static! https://gitlab.com/procps-ng/procps/issues/33
     static proc_t proc_info;
     memset(&proc_info, 0, sizeof(proc_t));
 
-    std::vector<proc_t> processes;
+    total_cpu_time = getTotalCpuTime() - total_cpu_time;
+
+    storedProcType processes;
     while (readproc(proc, &proc_info) != NULL) {
-        /*printf("%20s:\t%5ld\t%5lld\t%5lld\n",
-        proc_info.cmd, proc_info.resident,
-        proc_info.utime, proc_info.stime);*/
-        processes.push_back(proc_info);
+        processes[proc_info.tid]=proc_info;
     }
     closeproc(proc);
+
+    // fill in cpu%
+    if (prevProcs.size()>0) {
+        // we have previous proc info
+        for(auto &newItr:processes) {
+            for(auto &prevItr:prevProcs) {
+                if (newItr.first == prevItr.first) {
+                    // PID matches, calculate the cpu
+                    unsigned long long cpuTime = ((newItr.second.utime + newItr.second.stime)
+                            - (prevItr.second.utime + prevItr.second.stime));
+                    /// TODO: GSM has an option to divide by # cpus
+                    newItr.second.pcpu = (cpuTime / (float)total_cpu_time) * 100.0 * sysconf(_SC_NPROCESSORS_CONF);
+                }
+            }
+        }
+    }
+    prevProcs = processes;
 
     processesTable->setUpdatesEnabled(false); // avoid inconsistant data
     processesTable->setSortingEnabled(false);
     processesTable->setRowCount(processes.size());
-    for(unsigned int i=0; i<processes.size(); i++) {
-        proc_t* p = &(processes.at(i));
+    unsigned int index = 0;
+    for(auto &i:processes) {
+        proc_t* p = &(i.second);
         std::string processName = getProcessNameFromPID(p->tid);
-        processesTable->setItem(i,0,new QTableWidgetItem(processName!=""? processName.c_str():p->cmd));
+        processesTable->setItem(index,0,new QTableWidgetItem(processName!=""? processName.c_str():p->cmd));
         QString user = p->euser;
-        processesTable->setItem(i,1,new QTableWidgetItem(user));
+        processesTable->setItem(index,1,new QTableWidgetItem(user));
+        //std::cout << p->pcpu << std::endl;
         QString cpu = std::to_string(p->pcpu).c_str();
-        processesTable->setItem(i,2,new TableNumberItem(cpu));
+        processesTable->setItem(index,2,new TableNumberItem(cpu));
         QString id = std::to_string(p->tid).c_str();
-        processesTable->setItem(i,3,new TableNumberItem(id));
+        processesTable->setItem(index,3,new TableNumberItem(id));
         // gnome-system-monitor measures memory as RSS - shared
         // shared memory is only given as # pages, sysconf(_SC_PAGES) is in bytes
         // so do, (#pages RSS - #pages Share) * _SC_PAGES
         memoryEntry memory = convertMemoryUnit((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b);
-        processesTable->setItem(i,4,new TableMemoryItem(memory.unit,truncateDouble(memory.id,1)));
-        processesTable->showRow(i);
+        processesTable->setItem(index,4,new TableMemoryItem(memory.unit,truncateDouble(memory.id,1)));
+        processesTable->showRow(index);
 
         if (shouldHideProcess(p->euid)) {
             // hide this row
-            processesTable->hideRow(i);
+            processesTable->hideRow(index);
         }
+        index++;
     }
     processesTable->setUpdatesEnabled(true);
     processesTable->setSortingEnabled(true);
@@ -172,5 +224,6 @@ void processInformationWorker::updateTable() {
 void processInformationWorker::loop()
 {
     emit(updateTableData());
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 

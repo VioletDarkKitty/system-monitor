@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "processinformationworker.h"
 #include "resourcesworker.h"
+#include "filesystemworker.h"
 namespace Ui {
 class MainWindow;
 }
@@ -23,6 +24,7 @@ private slots:
 private:
     processInformationWorker* processesThread;
     resourcesWorker* resourcesThread;
+    fileSystemWorker* filesystemThread;
     QTabWidget* mainTabs;
 };
 

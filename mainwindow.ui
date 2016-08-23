@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>322</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -198,6 +198,11 @@
        <attribute name="title">
         <string>File Systems</string>
        </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QTableWidget" name="tableFilesystem"/>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>

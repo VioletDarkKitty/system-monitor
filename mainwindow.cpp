@@ -9,9 +9,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     processesThread = new processInformationWorker(this);
     resourcesThread = new resourcesWorker(this);
+    filesystemThread = new fileSystemWorker(this);
 
     processesThread->start();
     resourcesThread->start();
+    filesystemThread->start();
 
     mainTabs = findChild<QTabWidget*>("tabWidgetMain");
     connect(mainTabs, SIGNAL(currentChanged(int)), this, SLOT(handleTabChange()));
@@ -24,6 +26,7 @@ MainWindow::~MainWindow()
     delete ui;
     delete processesThread;
     delete resourcesThread;
+    delete filesystemThread;
     delete mainTabs;
 }
 
@@ -32,6 +35,7 @@ void MainWindow::handleTabChange()
     unsigned int index = mainTabs->currentIndex();
     processesThread->setPaused(true);
     resourcesThread->setPaused(true);
+    filesystemThread->setPaused(true);
     switch(index) {
         case 0:
             processesThread->setPaused(false);
@@ -42,6 +46,7 @@ void MainWindow::handleTabChange()
         break;
 
         case 2:
+            filesystemThread->setPaused(false);
         break;
     }
 }

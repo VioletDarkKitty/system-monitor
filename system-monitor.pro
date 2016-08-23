@@ -17,7 +17,8 @@ SOURCES += main.cpp\
     processinformationworker.cpp \
     workerthread.cpp \
     resourcesworker.cpp \
-    memoryconversion.cpp
+    memoryconversion.cpp \
+    filesystemworker.cpp
 
 HEADERS  += mainwindow.h \
     processinformationworker.h \
@@ -25,7 +26,8 @@ HEADERS  += mainwindow.h \
     workerthread.h \
     resourcesworker.h \
     memoryconversion.h \
-    tablememoryitem.h
+    tablememoryitem.h \
+    filesystemworker.h
 
 FORMS    += mainwindow.ui
 

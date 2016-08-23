@@ -1,8 +1,6 @@
 #include "processinformationworker.h"
-#include <iostream>
 #include <QTabWidget>
 #include <QAction>
-#include <string>
 #include <pwd.h>
 #include "tablenumberitem.h"
 #include <signal.h>
@@ -13,6 +11,7 @@
 #include <unistd.h>
 #include <experimental/filesystem>
 #include <fstream>
+#include <iostream>
 
 processInformationWorker::processInformationWorker(QObject *parent) :
     QObject(parent), workerThread() {
@@ -56,9 +55,7 @@ void processInformationWorker::createProcessesView()
 void processInformationWorker::handleProcessStop()
 {
     int row = processesTable->currentIndex().row();
-    std::cout << row << std::endl;
     // get PID
-    std::cout << processesTable->item(row,3)->text().toStdString() << std::endl;
     int pid = processesTable->item(row,3)->text().toInt();
 
     QMessageBox::StandardButton reply;
@@ -75,7 +72,6 @@ void processInformationWorker::handleProcessStop()
                                 "Could not send signal, permission denied!", QMessageBox::Ok);
             }
         }
-        std::cout << "Killing " << pid << std::endl;
     }
 }
 
@@ -98,12 +94,81 @@ void processInformationWorker::filterProcesses(QString filter)
         // check if the row is already hidden, if so, skip it
         /// TODO: find a better fix for this, can't check using QTableWidget
         /// so just check the PID manually
-
         if (!shouldHideProcess(getpwnam(processesTable->item(i,1)->text().toStdString().c_str())->pw_uid)) {
             QTableWidgetItem* item = processesTable->item(i,0); // process name
             processesTable->setRowHidden(i, !(item->text().contains(filter)));
         }
     }
+}
+
+/** exe_of() - Obtain the executable path a process is running
+ * @pid: Process ID
+ * @sizeptr: If specified, the allocated size is saved here
+ * @lenptr: If specified, the path length is saved here
+ * Returns the dynamically allocated pointer to the path,
+ * or NULL with errno set if an error occurs.
+*/
+// from http://stackoverflow.com/questions/24581908/c-lstat-on-proc-pid-exe
+char* processInformationWorker::exe_of(const pid_t pid, size_t *const sizeptr, size_t *const lenptr)
+{
+    char   *exe_path = NULL;
+    size_t  exe_size = 1024;
+    ssize_t exe_used;
+    char    path_buf[64];
+    unsigned int path_len;
+
+    path_len = snprintf(path_buf, sizeof path_buf, "/proc/%ld/exe", (long)pid);
+    if (path_len < 1 || path_len >= sizeof path_buf) {
+        errno = ENOMEM;
+        return NULL;
+    }
+
+    while (1) {
+
+        exe_path = (char*)malloc(exe_size);
+        if (!exe_path) {
+            errno = ENOMEM;
+            return NULL;
+        }
+
+        exe_used = readlink(path_buf, exe_path, exe_size - 1);
+        if (exe_used == (ssize_t)-1)
+            return NULL;
+
+        if (exe_used < (ssize_t)1) {
+            /* Race condition? */
+            errno = ENOENT;
+            return NULL;
+        }
+
+        if (exe_used < (ssize_t)(exe_size - 1))
+            break;
+
+        free(exe_path);
+        exe_size += 1024;
+    }
+
+    /* Try reallocating the exe_path to minimum size.
+     * This is optional, and can even fail without
+     * any bad effects. */
+    {
+        char *temp;
+
+        temp = (char*)realloc(exe_path, exe_used + 1);
+        if (temp) {
+            exe_path = temp;
+            exe_size = exe_used + 1;
+        }
+    }
+
+    if (sizeptr)
+        *sizeptr = exe_size;
+
+    if (lenptr)
+        *lenptr = exe_used;
+
+    exe_path[exe_used] = '\0';
+    return exe_path;
 }
 
 std::string processInformationWorker::getProcessNameFromPID(unsigned int pid)
@@ -122,7 +187,7 @@ std::string processInformationWorker::getProcessNameFromPID(unsigned int pid)
         return "";
     }
 
-    return std::experimental::filesystem::path(temp).filename();
+    return std::experimental::filesystem::path(explode(temp,'\0')[0]).filename();
 }
 
 unsigned long long processInformationWorker::getTotalCpuTime()
@@ -186,16 +251,29 @@ void processInformationWorker::updateTable() {
             }
         }
     }
-    prevProcs = processes;
 
     processesTable->setUpdatesEnabled(false); // avoid inconsistant data
     processesTable->setSortingEnabled(false);
     processesTable->setRowCount(processes.size());
     unsigned int index = 0;
     for(auto &i:processes) {
-        proc_t* p = &(i.second);
-        std::string processName = getProcessNameFromPID(p->tid);
-        processesTable->setItem(index,0,new QTableWidgetItem(processName!=""? processName.c_str():p->cmd));
+        proc_t* p = (&i.second);
+        std::string processName = "ERROR";
+        char* temp = exe_of(p->tid,NULL,NULL);
+        // if exe_of fails here, it will be because permission is denied
+        if (temp!=NULL) {
+            processName = std::experimental::filesystem::path(temp).filename();
+            delete temp;
+        } else {
+            // next try to read from /proc/*/cmdline
+            processName = getProcessNameFromPID(p->tid);
+            if (processName=="") {
+                // fallback on /proc/*/stat program name value
+                // bad because it is limited to 16 chars
+                processName = p->cmd;
+            }
+        }
+        processesTable->setItem(index,0,new QTableWidgetItem(processName.c_str()));
         QString user = p->euser;
         processesTable->setItem(index,1,new QTableWidgetItem(user));
         //std::cout << p->pcpu << std::endl;
@@ -219,6 +297,9 @@ void processInformationWorker::updateTable() {
     processesTable->setUpdatesEnabled(true);
     processesTable->setSortingEnabled(true);
     emit(signalFilterProcesses(searchField->text()));
+
+    // keep processes we've read for cpu calculations next cycle
+    prevProcs = processes;
 }
 
 void processInformationWorker::loop()

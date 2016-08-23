@@ -263,7 +263,7 @@ void processInformationWorker::updateTable() {
         // if exe_of fails here, it will be because permission is denied
         if (temp!=NULL) {
             processName = std::experimental::filesystem::path(temp).filename();
-            delete temp;
+            free(temp);
         } else {
             // next try to read from /proc/*/cmdline
             processName = getProcessNameFromPID(p->tid);

@@ -9,9 +9,9 @@
 #include "tablememoryitem.h"
 #include "memoryconversion.h"
 #include <unistd.h>
-#include <experimental/filesystem>
 #include <fstream>
 #include <iostream>
+#include <QFileInfo>
 
 processInformationWorker::processInformationWorker(QObject *parent) :
     QObject(parent), workerThread() {
@@ -60,7 +60,7 @@ void processInformationWorker::handleProcessStop()
 
     QMessageBox::StandardButton reply;
     std::string info = "Are you sure you want to stop "+processesTable->item(row,0)->text().toStdString();
-    reply = QMessageBox::question(processesTable, "Info", info.c_str(),
+    reply = QMessageBox::question(processesTable, "Info", QString::fromStdString(info),
                                   QMessageBox::Yes|QMessageBox::No);
 
     if (reply == QMessageBox::Yes) {
@@ -132,12 +132,15 @@ char* processInformationWorker::exe_of(const pid_t pid, size_t *const sizeptr, s
         }
 
         exe_used = readlink(path_buf, exe_path, exe_size - 1);
-        if (exe_used == (ssize_t)-1)
+        if (exe_used == (ssize_t)-1) {
+            free(exe_path);
             return NULL;
+        }
 
         if (exe_used < (ssize_t)1) {
             /* Race condition? */
             errno = ENOENT;
+            free(exe_path);
             return NULL;
         }
 
@@ -171,7 +174,7 @@ char* processInformationWorker::exe_of(const pid_t pid, size_t *const sizeptr, s
     return exe_path;
 }
 
-std::string processInformationWorker::getProcessNameFromPID(unsigned int pid)
+QString processInformationWorker::getProcessNameFromPID(unsigned int pid)
 {
     std::string temp;
     try {
@@ -187,7 +190,7 @@ std::string processInformationWorker::getProcessNameFromPID(unsigned int pid)
         return "";
     }
 
-    return std::experimental::filesystem::path(explode(temp,'\0')[0]).filename();
+    return QFileInfo(QString::fromStdString(explode(temp,'\0')[0])).fileName();
 }
 
 unsigned long long processInformationWorker::getTotalCpuTime()
@@ -258,28 +261,28 @@ void processInformationWorker::updateTable() {
     unsigned int index = 0;
     for(auto &i:processes) {
         proc_t* p = (&i.second);
-        std::string processName = "ERROR";
+        QString processName = "ERROR";
         char* temp = exe_of(p->tid,NULL,NULL);
         // if exe_of fails here, it will be because permission is denied
         if (temp!=NULL) {
-            processName = std::experimental::filesystem::path(temp).filename();
+            processName = QFileInfo(temp).fileName();
             free(temp);
         } else {
-            // next try to read from /proc/*/cmdline
+            // next try to read from /proc/*//*cmdline
             processName = getProcessNameFromPID(p->tid);
             if (processName=="") {
-                // fallback on /proc/*/stat program name value
+                // fallback on /proc/*//*stat program name value
                 // bad because it is limited to 16 chars
                 processName = p->cmd;
             }
         }
-        processesTable->setItem(index,0,new QTableWidgetItem(processName.c_str()));
+        processesTable->setItem(index,0,new QTableWidgetItem(processName));
         QString user = p->euser;
         processesTable->setItem(index,1,new QTableWidgetItem(user));
         //std::cout << p->pcpu << std::endl;
-        QString cpu = std::to_string(p->pcpu).c_str();
+        QString cpu = QString::number(p->pcpu);
         processesTable->setItem(index,2,new TableNumberItem(cpu));
-        QString id = std::to_string(p->tid).c_str();
+        QString id = QString::number(p->tid);
         processesTable->setItem(index,3,new TableNumberItem(id));
         // gnome-system-monitor measures memory as RSS - shared
         // shared memory is only given as # pages, sysconf(_SC_PAGES) is in bytes

@@ -34,7 +34,7 @@ private:
     QLineEdit* searchField;
     bool shouldHideProcess(unsigned int pid);
     char* exe_of(const pid_t pid, size_t *const sizeptr, size_t *const lenptr);
-    std::string getProcessNameFromPID(unsigned int pid);
+    QString getProcessNameFromPID(unsigned int pid);
     storedProcType prevProcs;
     unsigned long long total_cpu_time;
     unsigned long long getTotalCpuTime();

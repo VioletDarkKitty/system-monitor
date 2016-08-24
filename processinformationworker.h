@@ -21,6 +21,7 @@ private slots:
     void handleProcessStop();
     void updateTable();
     void filterProcesses(QString filter);
+    void changeCurrentTableRowSelection(QModelIndex current);
 
 signals:
     void updateTableData();
@@ -52,6 +53,7 @@ private:
 
         return v;
     }
+    int selectedRowInfoID;
 };
 
 #endif // PROCESSINFORMATIONWORKER_H

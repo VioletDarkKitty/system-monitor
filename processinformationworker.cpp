@@ -36,9 +36,17 @@ processInformationWorker::processInformationWorker(QObject *parent) :
 
     connect(searchField,SIGNAL(textChanged(QString)),this,SLOT(filterProcesses(QString)));
     connect(this,SIGNAL(signalFilterProcesses(QString)),this,SLOT(filterProcesses(QString)));
+    connect(processesTable->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+            this,SLOT(changeCurrentTableRowSelection(QModelIndex)));
 
     connect(this,SIGNAL(updateTableData()),SLOT(updateTable()));    
     createProcessesView();
+}
+
+void processInformationWorker::changeCurrentTableRowSelection(QModelIndex current)
+{
+    // remember the tid so we can get the correct row again when we update the table
+    selectedRowInfoID = processesTable->item(current.row(),3)->text().toInt();
 }
 
 void processInformationWorker::createProcessesView()
@@ -295,8 +303,18 @@ void processInformationWorker::updateTable() {
             // hide this row
             processesTable->hideRow(index);
         }
+
+        // update the row selection to reflect the row that was previously selected
+        if (selectedRowInfoID>0) {
+            if (selectedRowInfoID == p->tid) {
+                // this is the same process
+                processesTable->selectRow(index);
+            }
+        }
+
         index++;
     }
+
     processesTable->setUpdatesEnabled(true);
     processesTable->setSortingEnabled(true);
     emit(signalFilterProcesses(searchField->text()));

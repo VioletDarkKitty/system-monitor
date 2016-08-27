@@ -22,6 +22,7 @@ private slots:
     void updateTable();
     void filterProcesses(QString filter);
     void changeCurrentTableRowSelection(QModelIndex current);
+    void showProcessProperties();
 
 signals:
     void updateTableData();
@@ -29,6 +30,7 @@ signals:
 
 private:
     void loop();
+    QObject* mainWindow;
     QTableWidget* processesTable;
     void createProcessesView();
     QCheckBox* filterCheckbox;

@@ -12,21 +12,27 @@
 #include <fstream>
 #include <iostream>
 #include <QFileInfo>
+#include "processpropertiesdialogue.h"
 
 processInformationWorker::processInformationWorker(QObject *parent) :
     QObject(parent), workerThread() {
+    mainWindow = parent;
     QTabWidget* mainTabs = parent->findChild<QTabWidget*>("tabWidgetMain");
     processesTable = mainTabs->findChild<QTableWidget*>("tableProcesses");
 
     total_cpu_time = 0;
+    selectedRowInfoID = 0;
 
     QAction* actionStop = new QAction("Stop",processesTable);
     connect(actionStop,SIGNAL(triggered(bool)),SLOT(handleProcessStop()));
 
+    QAction* actionProperties = new QAction("Properties",processesTable);
+    connect(actionProperties,SIGNAL(triggered(bool)),this,SLOT(showProcessProperties()));
+
     QList<QAction*> rightClickActions;
     rightClickActions.push_back(actionStop);
     rightClickActions.push_back(new QAction("Kill",processesTable));
-    rightClickActions.push_back(new QAction("Properties",processesTable));
+    rightClickActions.push_back(actionProperties);
 
     processesTable->setContextMenuPolicy(Qt::ActionsContextMenu);
     processesTable->addActions(rightClickActions);
@@ -41,6 +47,13 @@ processInformationWorker::processInformationWorker(QObject *parent) :
 
     connect(this,SIGNAL(updateTableData()),SLOT(updateTable()));    
     createProcessesView();
+}
+
+void processInformationWorker::showProcessProperties()
+{
+    processPropertiesDialogue* properties = new processPropertiesDialogue((QWidget*)mainWindow, selectedRowInfoID);
+    properties->show();
+    properties->exec();
 }
 
 void processInformationWorker::changeCurrentTableRowSelection(QModelIndex current)

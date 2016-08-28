@@ -1,5 +1,7 @@
 #include "processpropertiesdialogue.h"
 #include "ui_processpropertiesdialogue.h"
+#include "tablememoryitem.h"
+#include "memoryconversion.h"
 
 processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid) :
     QDialog(parent),
@@ -41,7 +43,7 @@ processPropertiesDialogue::~processPropertiesDialogue()
 
 void processPropertiesDialogue::updateTableData()
 {
-    PROCTAB *tab = openproc(PROC_PID | PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_FILLUSR | PROC_FILLCOM);
+    PROCTAB *tab = openproc(PROC_PID | PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_FILLUSR | PROC_FILLNS);
     proc_t* p; // Don't fill the proc_t struct with any info
 
     tab->pids = (pid_t*)malloc(sizeof(pid_t*)*2); // PROCTAB should clean this up when closeproc is called
@@ -56,11 +58,29 @@ void processPropertiesDialogue::updateTableData()
         // set the fields for the process properties
         processInfoTable->setItem(processName,1,new QTableWidgetItem(p->cmd));
         processInfoTable->setItem(processUser,1,new QTableWidgetItem(p->euser));
-        processInfoTable->setItem(processStatus,1,new QTableWidgetItem(p->state));
-        processInfoTable->setItem(processMemory,1,new QTableWidgetItem(0)); // convertMemoryUnit((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b)
-        processInfoTable->setItem(processVirtual,1,new QTableWidgetItem(p->vm_size));
-        processInfoTable->setItem(processResident,1,new QTableWidgetItem(p->vm_rss));
-        processInfoTable->setItem(processShared,1,new QTableWidgetItem(p->share*sysconf(_SC_PAGESIZE)));
+        QString status;
+        switch(p->state) {
+            case 'S':
+                status = "Sleeping";
+            break;
+
+            case 'R':
+                status = "Running";
+            break;
+
+            case 'Z':
+                status = "Zombie";
+            break;
+        }
+        processInfoTable->setItem(processStatus,1,new QTableWidgetItem(status));
+        memoryEntry memory = convertMemoryUnit((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b);
+        processInfoTable->setItem(processMemory,1,new TableMemoryItem(memory.unit,truncateDouble(memory.id,1)));
+        memoryEntry virtualMemory = convertMemoryUnit(p->vm_size,memoryUnit::kb);
+        processInfoTable->setItem(processVirtual,1,new TableMemoryItem(virtualMemory.unit,truncateDouble(virtualMemory.id,1)));
+        memoryEntry residentMemory = convertMemoryUnit(p->vm_rss,memoryUnit::kb);
+        processInfoTable->setItem(processResident,1,new TableMemoryItem(residentMemory.unit,truncateDouble(residentMemory.id,1)));
+        memoryEntry sharedMemory = convertMemoryUnit(p->share*sysconf(_SC_PAGESIZE),memoryUnit::kb);
+        processInfoTable->setItem(processShared,1,new TableMemoryItem(sharedMemory.unit,truncateDouble(sharedMemory.id,1)));
         processInfoTable->setItem(processCPU,1,new QTableWidgetItem(0));
     }
     processInfoTable->resizeColumnsToContents();

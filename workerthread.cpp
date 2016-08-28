@@ -9,7 +9,7 @@ workerThread::workerThread()
 
 workerThread::~workerThread()
 {
-    delete workerThreadThread;
+
 }
 
 void workerThread::start()

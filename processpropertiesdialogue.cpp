@@ -1,7 +1,10 @@
 #include "processpropertiesdialogue.h"
 #include "ui_processpropertiesdialogue.h"
 #include "tablememoryitem.h"
+#include "tablenumberitem.h"
 #include "memoryconversion.h"
+#include "processtools.h"
+using namespace processTools;
 
 processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid) :
     QDialog(parent),
@@ -10,10 +13,13 @@ processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid)
     ui->setupUi(this);
 
     processID = pid;
+    before = NULL;
+    cpuTime = 0;
 
     processInfoTable = this->findChild<QTableWidget*>("processInfoTable");
     processInfoTable->verticalHeader()->setHidden(true);
     processInfoTable->horizontalHeader()->setHidden(true);
+    processInfoTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     processInfoTable->setRowCount(8);
     processInfoTable->setColumnCount(2);
@@ -29,16 +35,15 @@ processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid)
     connect(this, SIGNAL(updateTable()), this, SLOT(updateTableData()));
     connect(parent,SIGNAL(destroyed(QObject*)),this,SLOT(deleteLater()));
 
+    // hide minimise and maximise buttons
+    setWindowFlags(Qt::Tool | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint);
+
     this->start();
 }
 
 processPropertiesDialogue::~processPropertiesDialogue()
 {
     delete ui;
-    this->quit();
-    while(this->running()) {
-        ; // wait for the thread to quit
-    }
 }
 
 void processPropertiesDialogue::updateTableData()
@@ -54,10 +59,16 @@ void processPropertiesDialogue::updateTableData()
     if ((p=readproc(tab,NULL))==NULL) {
         // The process is dead
         // GSM shows N/A for some fields in a dead process
+        processInfoTable->setItem(processStatus,1,new QTableWidgetItem("Dead"));
     } else {
+        QString procName = getProcessName(p);
+        // set the window title
+        QString title = procName + " (" + "PID " + QString::number(p->tid) + ")";
+        this->setWindowTitle(title);
         // set the fields for the process properties
-        processInfoTable->setItem(processName,1,new QTableWidgetItem(p->cmd));
-        processInfoTable->setItem(processUser,1,new QTableWidgetItem(p->euser));
+        processInfoTable->setItem(processName,1,new QTableWidgetItem(procName));
+        QString user = QString(p->euser) + " (" + QString::number(p->euid) + ")";
+        processInfoTable->setItem(processUser,1,new QTableWidgetItem(user));
         QString status;
         switch(p->state) {
             case 'S':
@@ -71,6 +82,9 @@ void processPropertiesDialogue::updateTableData()
             case 'Z':
                 status = "Zombie";
             break;
+
+            default:
+                status = "Unknown state" + QString(p->state);
         }
         processInfoTable->setItem(processStatus,1,new QTableWidgetItem(status));
         memoryEntry memory = convertMemoryUnit((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b);
@@ -79,9 +93,17 @@ void processPropertiesDialogue::updateTableData()
         processInfoTable->setItem(processVirtual,1,new TableMemoryItem(virtualMemory.unit,truncateDouble(virtualMemory.id,1)));
         memoryEntry residentMemory = convertMemoryUnit(p->vm_rss,memoryUnit::kb);
         processInfoTable->setItem(processResident,1,new TableMemoryItem(residentMemory.unit,truncateDouble(residentMemory.id,1)));
-        memoryEntry sharedMemory = convertMemoryUnit(p->share*sysconf(_SC_PAGESIZE),memoryUnit::kb);
+        memoryEntry sharedMemory = convertMemoryUnit(p->share*sysconf(_SC_PAGESIZE),memoryUnit::b);
         processInfoTable->setItem(processShared,1,new TableMemoryItem(sharedMemory.unit,truncateDouble(sharedMemory.id,1)));
-        processInfoTable->setItem(processCPU,1,new QTableWidgetItem(0));
+        QString cpuPercentage;
+        if (before==NULL) {
+            cpuPercentage = "0%";
+        } else {
+            cpuPercentage = QString::number((unsigned int)calculateCPUPercentage(before,p,cpuTime)) + "%";
+            free(before);
+        }
+        before = p;
+        processInfoTable->setItem(processCPU,1,new TableNumberItem(cpuPercentage));
     }
     processInfoTable->resizeColumnsToContents();
     processInfoTable->setUpdatesEnabled(true);

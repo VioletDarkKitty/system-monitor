@@ -37,6 +37,8 @@ private:
     /*const int processName = 0, processUser = 1, processStatus = 2, processMemory = 3,
               processVirtual = 4, processResident = 5, processShared = 6, processCPU = 7,
               processStarted = 8;*/
+    proc_t* before;
+    unsigned long long cpuTime;
 };
 
 #endif // PROCESSPROPERTIESDIALOGUE_H

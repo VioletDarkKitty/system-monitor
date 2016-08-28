@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     resourcesworker.cpp \
     memoryconversion.cpp \
     filesystemworker.cpp \
-    processpropertiesdialogue.cpp
+    processpropertiesdialogue.cpp \
+    processtools.cpp
 
 HEADERS  += mainwindow.h \
     processinformationworker.h \
@@ -29,7 +30,8 @@ HEADERS  += mainwindow.h \
     memoryconversion.h \
     tablememoryitem.h \
     filesystemworker.h \
-    processpropertiesdialogue.h
+    processpropertiesdialogue.h \
+    processtools.h
 
 FORMS    += mainwindow.ui \
     processpropertiesdialogue.ui

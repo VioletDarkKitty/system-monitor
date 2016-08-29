@@ -15,6 +15,9 @@ MainWindow::MainWindow(QWidget *parent) :
     resourcesThread->start();
     filesystemThread->start();
 
+    quitAction = this->findChild<QAction*>("actionQuit");
+    connect(quitAction,SIGNAL(triggered(bool)),QApplication::instance(),SLOT(quit()));
+
     mainTabs = findChild<QTabWidget*>("tabWidgetMain");
     connect(mainTabs, SIGNAL(currentChanged(int)), this, SLOT(handleTabChange()));
 

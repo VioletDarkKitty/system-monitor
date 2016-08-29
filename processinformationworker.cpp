@@ -1,6 +1,5 @@
 #include "processinformationworker.h"
 #include <QTabWidget>
-#include <QAction>
 #include <pwd.h>
 #include "tablenumberitem.h"
 #include <signal.h>
@@ -11,6 +10,7 @@
 #include "processpropertiesdialogue.h"
 #include "processtools.h"
 #include <proc/sysinfo.h>
+#include <QAction>
 using namespace processTools;
 
 processInformationWorker::processInformationWorker(QObject *parent) :
@@ -201,8 +201,12 @@ void processInformationWorker::loop()
     // get the load average
     double av1, av5, av15;
     loadavg(&av1,&av5,&av15);
+    // work out how overloaded the system was in the last minute based on CPU alone
+    // yes, linux uses more than just CPU in the load calculations
+    double overload = av1 - smp_num_cpus;
     QString avg = "Load averages for the last 1, 5, 15 minutes: " + QString::number(av1)
-            + ", " + QString::number(av5) + ", " + QString::number(av15);
+            + ", " + QString::number(av5) + ", " + QString::number(av15)
+            + (overload<0? "":"\nOverloaded by " + QString::number(overload*100) + "% in the last minute!");
     emit(updateLoadAverage(avg));
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }

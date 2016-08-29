@@ -5,6 +5,8 @@
 #include "processinformationworker.h"
 #include "resourcesworker.h"
 #include "filesystemworker.h"
+#include <QAction>
+
 namespace Ui {
 class MainWindow;
 }
@@ -26,6 +28,7 @@ private:
     resourcesWorker* resourcesThread;
     fileSystemWorker* filesystemThread;
     QTabWidget* mainTabs;
+    QAction* quitAction;
 };
 
 #endif // MAINWINDOW_H

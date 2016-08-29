@@ -19,14 +19,6 @@ resourcesWorker::resourcesWorker(QObject *parent)
     connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));
 }
 
-resourcesWorker::~resourcesWorker()
-{
-    delete memoryBar;
-    delete memoryLabel;
-    delete swapBar;
-    delete swapLabel;
-}
-
 void resourcesWorker::loop()
 {
     meminfo(); // have procps read the memory
@@ -41,13 +33,13 @@ void resourcesWorker::loop()
     memoryEntry mainTotal = convertMemoryUnit(kb_main_total,memoryUnit::kb);
 
     // cleanup the memory values
-    std::string mainUsedValue =  dbl2str(truncateDouble(mainUsed.id,1));
+    std::string mainUsedValue = dbl2str(truncateDouble(mainUsed.id,1));
     std::string mainTotalValue = dbl2str(truncateDouble(mainTotal.id,1));
     std::string memPercent = dbl2str(truncateDouble(memory,1));
 
     std::string memoryText = mainUsedValue + unitToString(mainUsed.unit)
             + " (" + memPercent + "%) of " + mainTotalValue + unitToString(mainTotal.unit);
-    emit(updateMemoryText(memoryText.c_str()));
+    emit(updateMemoryText(QString::fromStdString(memoryText)));
 
     /** SWAP **/
     if (kb_swap_total > 0.0) {
@@ -64,7 +56,7 @@ void resourcesWorker::loop()
 
         std::string swapText = swapUsedValue + unitToString(swapUsed.unit)
                 + " (" + swapPercent + "%) of " + swapTotalValue + unitToString(swapTotal.unit);
-        emit(updateSwapText(swapText.c_str()));
+        emit(updateSwapText(QString::fromStdString(swapText)));
     } else {
         // there is no swap
         emit(updateSwapBar(0));

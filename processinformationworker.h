@@ -9,6 +9,7 @@
 #include <QLineEdit>
 #include <string>
 #include <vector>
+#include <QLabel>
 
 class processInformationWorker : public QObject, public workerThread
 {
@@ -27,6 +28,7 @@ private slots:
 signals:
     void updateTableData();
     void signalFilterProcesses(QString filter);
+    void updateLoadAverage(QString value);
 
 private:
     void loop();
@@ -39,6 +41,7 @@ private:
     storedProcType prevProcs;
     unsigned long long total_cpu_time;
     int selectedRowInfoID;
+    QLabel* loadAverage;
 };
 
 #endif // PROCESSINFORMATIONWORKER_H

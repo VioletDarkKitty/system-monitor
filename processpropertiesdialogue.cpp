@@ -21,7 +21,7 @@ processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid)
     processInfoTable->horizontalHeader()->setHidden(true);
     processInfoTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-    processInfoTable->setRowCount(8);
+    processInfoTable->setRowCount((int)processLastItem);
     processInfoTable->setColumnCount(2);
     processInfoTable->setItem(processName,0,new QTableWidgetItem("Process Name"));
     processInfoTable->setItem(processUser,0,new QTableWidgetItem("User"));
@@ -31,6 +31,9 @@ processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid)
     processInfoTable->setItem(processResident,0,new QTableWidgetItem("Resident Memory"));
     processInfoTable->setItem(processShared,0,new QTableWidgetItem("Shared Memory"));
     processInfoTable->setItem(processCPU,0,new QTableWidgetItem("CPU%"));
+    processInfoTable->setItem(processStarted,0,new QTableWidgetItem("Started"));
+    processInfoTable->setItem(processPID,0,new QTableWidgetItem("PID"));
+    processInfoTable->setItem(processCmdLine,0,new QTableWidgetItem("Command Line"));
 
     connect(this, SIGNAL(updateTable()), this, SLOT(updateTableData()));
     connect(parent,SIGNAL(destroyed(QObject*)),this,SLOT(deleteLater()));
@@ -104,6 +107,9 @@ void processPropertiesDialogue::updateTableData()
         }
         before = p;
         processInfoTable->setItem(processCPU,1,new TableNumberItem(cpuPercentage));
+        processInfoTable->setItem(processStarted,1,new QTableWidgetItem(getProcessStartDate(p->start_time)));
+        processInfoTable->setItem(processPID,1,new TableNumberItem(QString::number(p->tgid)));
+        processInfoTable->setItem(processCmdLine,1,new QTableWidgetItem(getProcessCmdline(p->tgid)));
     }
     processInfoTable->resizeColumnsToContents();
     processInfoTable->setUpdatesEnabled(true);

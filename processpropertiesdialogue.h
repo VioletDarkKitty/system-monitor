@@ -32,7 +32,8 @@ private:
 
     enum {
         processName=0, processUser, processStatus, processMemory, processVirtual,
-        processResident, processShared, processCPU, processStarted
+        processResident, processShared, processCPU, processStarted, processPID,
+        processCmdLine, processLastItem
     };
     /*const int processName = 0, processUser = 1, processStatus = 2, processMemory = 3,
               processVirtual = 4, processResident = 5, processShared = 6, processCPU = 7,

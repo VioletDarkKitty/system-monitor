@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <fstream>
 #include <QFileInfo>
+#include <proc/sysinfo.h>
+#include <time.h>
 
 namespace processTools {
     /** exe_of() - Obtain the executable path a process is running
@@ -93,12 +95,12 @@ namespace processTools {
         return v;
     }
 
-    QString getProcessNameFromPID(unsigned int pid)
+    QString getProcessNameFromCmdLine(const pid_t pid)
     {
         std::string temp;
         try {
             std::fstream fs;
-            fs.open ("/proc/"+std::to_string(pid)+"/cmdline", std::fstream::in);
+            fs.open("/proc/"+std::to_string((long)pid)+"/cmdline", std::fstream::in);
             fs >> temp;
             fs.close();
         } catch(std::ifstream::failure e) {
@@ -108,21 +110,41 @@ namespace processTools {
         if (temp.size()<1) {
             return "";
         }
-
+        // maintain linux paths
+        std::replace(temp.begin(),temp.end(),'\\','/');
         return QFileInfo(QString::fromStdString(explode(temp,'\0')[0])).fileName();
+    }
+
+    QString getProcessCmdline(pid_t pid)
+    {
+        /// TODO: remove this awful code duplication!
+        std::string temp;
+        try {
+            std::fstream fs;
+            fs.open("/proc/"+std::to_string((long)pid)+"/cmdline", std::fstream::in);
+            fs >> temp;
+            fs.close();
+        } catch(std::ifstream::failure e) {
+            return "FAILED TO READ PROC";
+        }
+
+        if (temp.size()<1) {
+            return "";
+        }
+        return QString::fromStdString(temp);
     }
 
     QString getProcessName(proc_t* p)
     {
         QString processName = "ERROR";
-        char* temp = exe_of(p->tid,NULL,NULL);
+        char* temp = NULL;//exe_of(p->tid,NULL,NULL);
         // if exe_of fails here, it will be because permission is denied
         if (temp!=NULL) {
             processName = QFileInfo(temp).fileName();
             free(temp);
         } else {
             // next try to read from /proc/*//*cmdline
-            processName = getProcessNameFromPID(p->tid);
+            processName = getProcessNameFromCmdLine(p->tid);
             if (processName=="") {
                 // fallback on /proc/*//*stat program name value
                 // bad because it is limited to 16 chars
@@ -178,5 +200,14 @@ namespace processTools {
                 - (before->utime + before->stime));
         /// TODO: GSM has an option to divide by # cpus
         return (processcpuTime / (float)cpuTime) * 100.0 * sysconf(_SC_NPROCESSORS_CONF);
+    }
+
+    QString getProcessStartDate(unsigned long long start_time)
+    {
+        __time_t time = getbtime() + start_time/Hertz;
+        struct tm *tm = localtime(&time);
+        char date[255];
+        strftime(date, sizeof(date), "%Ex %ER", tm);
+        return QString(date);
     }
 }

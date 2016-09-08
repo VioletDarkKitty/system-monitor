@@ -36,5 +36,5 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui \
     processpropertiesdialogue.ui
 
-QMAKE_CXXFLAGS += -std=c++11 -Wall
+QMAKE_CXXFLAGS += -std=c++14 -Wall
 LIBS += -L"libprocps" -lprocps -lstdc++fs

@@ -1,10 +1,5 @@
 #include "processpropertiesdialogue.h"
 #include "ui_processpropertiesdialogue.h"
-#include "tablememoryitem.h"
-#include "tablenumberitem.h"
-#include "memoryconversion.h"
-#include "processtools.h"
-using namespace processTools;
 
 processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid) :
     QDialog(parent),
@@ -21,19 +16,12 @@ processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid)
     processInfoTable->horizontalHeader()->setHidden(true);
     processInfoTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-    processInfoTable->setRowCount((int)processLastItem);
+    processInfoTable->setRowCount(propertiesTableData.size());
     processInfoTable->setColumnCount(2);
-    processInfoTable->setItem(processName,0,new QTableWidgetItem("Process Name"));
-    processInfoTable->setItem(processUser,0,new QTableWidgetItem("User"));
-    processInfoTable->setItem(processStatus,0,new QTableWidgetItem("Status"));
-    processInfoTable->setItem(processMemory,0,new QTableWidgetItem("Memory"));
-    processInfoTable->setItem(processVirtual,0,new QTableWidgetItem("Virtual Memory"));
-    processInfoTable->setItem(processResident,0,new QTableWidgetItem("Resident Memory"));
-    processInfoTable->setItem(processShared,0,new QTableWidgetItem("Shared Memory"));
-    processInfoTable->setItem(processCPU,0,new QTableWidgetItem("CPU%"));
-    processInfoTable->setItem(processStarted,0,new QTableWidgetItem("Started"));
-    processInfoTable->setItem(processPID,0,new QTableWidgetItem("PID"));
-    processInfoTable->setItem(processCmdLine,0,new QTableWidgetItem("Command Line"));
+    // set the labels for the table using the stored data
+    for(unsigned int i=0; i<propertiesTableData.size(); i++) {
+        processInfoTable->setItem(i,0,new QTableWidgetItem(propertiesTableData.at(i).first));
+    }
 
     connect(this, SIGNAL(updateTable()), this, SLOT(updateTableData()));
     connect(parent,SIGNAL(destroyed(QObject*)),this,SLOT(deleteLater()));
@@ -68,53 +56,27 @@ void processPropertiesDialogue::updateTableData()
         // set the window title
         QString title = procName + " (" + "PID " + QString::number(p->tid) + ")";
         this->setWindowTitle(title);
-        // set the fields for the process properties
-        processInfoTable->setItem(processName,1,new QTableWidgetItem(procName));
-        QString user = QString(p->euser) + " (" + QString::number(p->euid) + ")";
-        processInfoTable->setItem(processUser,1,new QTableWidgetItem(user));
-        QString status;
-        switch(p->state) {
-            case 'S':
-                status = "Sleeping";
-            break;
-
-            case 'R':
-                status = "Running";
-            break;
-
-            case 'Z':
-                status = "Zombie";
-            break;
-
-            default:
-                status = "Unknown state" + QString(p->state);
+        for(unsigned int i=0; i<propertiesTableData.size(); i++) {
+            processInfoTable->setItem(i,1,propertiesTableData.at(i).second(p));
         }
-        processInfoTable->setItem(processStatus,1,new QTableWidgetItem(status));
-        memoryEntry memory = convertMemoryUnit((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b);
-        processInfoTable->setItem(processMemory,1,new TableMemoryItem(memory.unit,truncateDouble(memory.id,1)));
-        memoryEntry virtualMemory = convertMemoryUnit(p->vm_size,memoryUnit::kb);
-        processInfoTable->setItem(processVirtual,1,new TableMemoryItem(virtualMemory.unit,truncateDouble(virtualMemory.id,1)));
-        memoryEntry residentMemory = convertMemoryUnit(p->vm_rss,memoryUnit::kb);
-        processInfoTable->setItem(processResident,1,new TableMemoryItem(residentMemory.unit,truncateDouble(residentMemory.id,1)));
-        memoryEntry sharedMemory = convertMemoryUnit(p->share*sysconf(_SC_PAGESIZE),memoryUnit::b);
-        processInfoTable->setItem(processShared,1,new TableMemoryItem(sharedMemory.unit,truncateDouble(sharedMemory.id,1)));
-        QString cpuPercentage;
-        if (before==NULL) {
-            cpuPercentage = "0%";
-        } else {
-            cpuPercentage = QString::number((unsigned int)calculateCPUPercentage(before,p,cpuTime)) + "%";
-            free(before);
-        }
-        before = p;
-        processInfoTable->setItem(processCPU,1,new TableNumberItem(cpuPercentage));
-        processInfoTable->setItem(processStarted,1,new QTableWidgetItem(getProcessStartDate(p->start_time)));
-        processInfoTable->setItem(processPID,1,new TableNumberItem(QString::number(p->tgid)));
-        processInfoTable->setItem(processCmdLine,1,new QTableWidgetItem(getProcessCmdline(p->tgid)));
     }
     processInfoTable->resizeColumnsToContents();
     processInfoTable->setUpdatesEnabled(true);
 
     closeproc(tab);
+}
+
+QString processPropertiesDialogue::getCpuPercentage(proc_t* p)
+{
+    QString cpuPercentage;
+    if (before==NULL) {
+        cpuPercentage = "0%";
+    } else {
+        cpuPercentage = QString::number((unsigned int)calculateCPUPercentage(before,p,cpuTime)) + "%";
+        free(before);
+    }
+    before = p;
+    return cpuPercentage;
 }
 
 void processPropertiesDialogue::loop()

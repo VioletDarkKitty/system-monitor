@@ -210,4 +210,24 @@ namespace processTools {
         strftime(date, sizeof(date), "%Ex %ER", tm);
         return QString(date);
     }
+
+    QString getProcessStatus(proc_t* p)
+    {
+        switch(p->state) {
+            case 'S':
+                return "Sleeping";
+            break;
+
+            case 'R':
+                return "Running";
+            break;
+
+            case 'Z':
+                return "Zombie";
+            break;
+
+            default:
+                return "Unknown state" + QString(p->state);
+        }
+    }
 }

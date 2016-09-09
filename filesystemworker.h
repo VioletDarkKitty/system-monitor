@@ -3,6 +3,8 @@
 #include <QObject>
 #include "workerthread.h"
 #include <QTableWidget>
+#include "memoryconversion.h"
+using namespace memoryConversion;
 
 class fileSystemWorker : public QObject, public workerThread
 {
@@ -20,6 +22,15 @@ private:
     void loop();
     QTableWidget* diskTable;
     void createFilesystemView();
+    struct disk {
+        QString name;
+        QString mountPoint;
+        QString type;
+        memoryEntry freeSize;
+        memoryEntry totalSize;
+        memoryEntry usedSize;
+        int usedPercentage;
+    };
 };
 
 #endif // FILESYSTEMWORKER_H

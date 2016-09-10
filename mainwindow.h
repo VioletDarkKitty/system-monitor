@@ -22,13 +22,14 @@ public:
 
 private slots:
     void handleTabChange();
+    void showAboutWindow();
 
 private:
     processInformationWorker* processesThread;
     resourcesWorker* resourcesThread;
     fileSystemWorker* filesystemThread;
     QTabWidget* mainTabs;
-    QAction* quitAction;
+    QAction *quitAction, *aboutAction;
 };
 
 #endif // MAINWINDOW_H

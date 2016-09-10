@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "aboutdialogue.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -17,6 +18,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     quitAction = this->findChild<QAction*>("actionQuit");
     connect(quitAction,SIGNAL(triggered(bool)),QApplication::instance(),SLOT(quit()));
+
+    aboutAction = this->findChild<QAction*>("actionAbout");
+    connect(aboutAction,SIGNAL(triggered(bool)),this,SLOT(showAboutWindow()));
 
     mainTabs = findChild<QTabWidget*>("tabWidgetMain");
     connect(mainTabs, SIGNAL(currentChanged(int)), this, SLOT(handleTabChange()));
@@ -52,4 +56,11 @@ void MainWindow::handleTabChange()
             filesystemThread->setPaused(false);
         break;
     }
+}
+
+void MainWindow::showAboutWindow()
+{
+    AboutDialogue* about = new AboutDialogue(this);
+    //about->show();
+    about->exec();
 }

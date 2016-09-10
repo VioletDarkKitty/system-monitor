@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     memoryconversion.cpp \
     filesystemworker.cpp \
     processpropertiesdialogue.cpp \
-    processtools.cpp
+    processtools.cpp \
+    aboutdialogue.cpp
 
 HEADERS  += mainwindow.h \
     processinformationworker.h \
@@ -31,10 +32,12 @@ HEADERS  += mainwindow.h \
     tablememoryitem.h \
     filesystemworker.h \
     processpropertiesdialogue.h \
-    processtools.h
+    processtools.h \
+    aboutdialogue.h
 
 FORMS    += mainwindow.ui \
-    processpropertiesdialogue.ui
+    processpropertiesdialogue.ui \
+    aboutdialogue.ui
 
 QMAKE_CXXFLAGS += -std=c++14 -Wall
 LIBS += -L"libprocps" -lprocps -lstdc++fs

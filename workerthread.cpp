@@ -9,7 +9,11 @@ workerThread::workerThread()
 
 workerThread::~workerThread()
 {
-
+    // wait for the thread to exit gracefully!
+    quit();
+    while(running()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
 }
 
 void workerThread::start()

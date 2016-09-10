@@ -11,6 +11,15 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = system-monitor
 TEMPLATE = app
 
+target.path = /usr/bin
+
+desktop.path = /usr/share/applications
+desktop.files += system-monitor.desktop
+
+icon.path = /usr/share/system-monitor/
+icon.files += system-monitor.png
+
+INSTALLS += target desktop icon
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -41,3 +50,6 @@ FORMS    += mainwindow.ui \
 
 QMAKE_CXXFLAGS += -std=c++14 -Wall
 LIBS += -L"libprocps" -lprocps -lstdc++fs
+
+DISTFILES += \
+    system-monitor.desktop

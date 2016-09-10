@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=System Monitor
+Comment=View current processes and monitor system state
+Type=Application
+Icon=/usr/share/system-monitor/system-monitor.png
+Terminal=false
+Exec=system-monitor
+Categories=Utility
+Keywords=Monitor;System;Process;CPU;Memory;Network;History;Usage;Performance;Task;Manager;

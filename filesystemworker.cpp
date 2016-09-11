@@ -6,6 +6,10 @@
 #include <QFile>
 #include <sys/statvfs.h>
 #include <iostream>
+#include <stdexcept>
+#include <time.h>
+#include <unistd.h>
+#include <QFileInfo>
 
 fileSystemWorker::fileSystemWorker(QObject *parent)
     : QObject(parent), workerThread()
@@ -16,14 +20,15 @@ fileSystemWorker::fileSystemWorker(QObject *parent)
     connect(this,SIGNAL(updateTableData()),this,SLOT(updateTable()));
 
     createFilesystemView();
+    timeSinceLastIOCheck = 0;
 }
 
 void fileSystemWorker::createFilesystemView()
 {
-    diskTable->setColumnCount(6);
+    diskTable->setColumnCount(7);
     diskTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     //table->setHorizontalHeaderLabels(QString("HEADER 1;HEADER 2;HEADER 3").split(";"));
-    diskTable->setHorizontalHeaderLabels(QString("Device;Directory;Type;Total;Available;Used;").split(";"));
+    diskTable->setHorizontalHeaderLabels(QString("Device;Directory;Type;Total;Available;Used;IO").split(";"));
     diskTable->verticalHeader()->setVisible(false);
     diskTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     diskTable->resizeColumnsToContents();
@@ -31,18 +36,79 @@ void fileSystemWorker::createFilesystemView()
 
 void fileSystemWorker::updateTable()
 {
+    timespec ts;
+    clock_gettime(CLOCK_MONOTONIC,&ts);
+    timeSinceLastIOCheck = ts.tv_sec*1000 - timeSinceLastIOCheck;
+
     // mtab lists all of the mounted disks on the machine, need to check that they exist in /dev and are real devices to avoid listing
     // things like the proc and udev file systems
     QFile file("/etc/mtab");
     std::vector<disk> disks;
     if (file.open(QFile::ReadOnly)) {
+        unsigned int index = 0;
         while(true) {
             QStringList tabParts = QString::fromLocal8Bit(file.readLine()).trimmed().split(" "); // read the next line
             if (tabParts.count() > 1) {
                 // still some of the file left to read
                 if (tabParts[0].contains("/dev/")) {
-                    disks.push_back({tabParts[0],tabParts[1],tabParts[2],{},{},{},0}); // http://serverfault.com/questions/267609/how-to-understand-etc-mtab
+                    // http://serverfault.com/questions/267609/how-to-understand-etc-mtab
+                    disk d;
+                    d.name=tabParts[0];
+                    d.mountPoint=tabParts[1];
+                    d.type=tabParts[2];
+
+                    /// TODO: this is inefficient
+                    // https://www.kernel.org/doc/Documentation/iostats.txt
+                    // check /proc/diskstats for the disks we found in mtab and then grab some extra data about them
+                    // some disks have are logical and have /dev/mapper/<disk> names, these should be shown using /dev/mapper names as in GSM but the names
+                    // need to be resolved to be used as /proc/diskstats uses dm type names. The disks are symlinked to the correct paths
+
+                    QString name = d.name;
+                    if (d.name.contains("/dev/mapper")) {
+                        char buf[1024];
+                        size_t len;
+                        if ((len = readlink(qPrintable(name), buf, sizeof(buf)-1))) {
+                            buf[len] = '\0';
+                        }
+                        name = QString(buf);
+                    }
+                    name = QFileInfo(name).fileName();
+
+                    QString parent = QFileInfo(name).fileName();
+                    if (parent.section(QRegExp("\\d"),0,parent.size()) != "" && !parent.contains("dm")) {
+                        // this disk has a parent
+                        parent.remove(QRegExp("\\d"));
+                    } else {
+                        parent = "";
+                    }
+
+                    #define NUMBER_OF_CHARS_PER_COL_IOSTAT 9
+                    std::vector<long> parts;
+                    QFile stat("/sys/block/"+(parent==""? "":parent+"/")+name+"/stat");
+                    if (stat.open(QFile::ReadOnly)) {
+                        QString s = stat.readLine();
+                        for (int i = 0; i < s.size(); i += NUMBER_OF_CHARS_PER_COL_IOSTAT) {
+                            parts.push_back(QString(QString::fromStdString(s.toStdString().substr(i, NUMBER_OF_CHARS_PER_COL_IOSTAT))).toLong());
+                        }
+
+                        if (oldDisks.size() > 0) {
+                            d.ioms = parts[9];
+                            d.io = 100 * (parts[9]-oldDisks[index].ioms) / timeSinceLastIOCheck;
+                            if (d.io > 100) {
+                                d.io = 100;
+                            }
+                            if (d.io < 0) {
+                                d.io = 0;
+                            }
+                        } else {
+                            d.io = 0;
+                            d.ioms = parts[9];
+                        }
+
+                        disks.push_back(d);
+                    }
                 }
+                index++;
             } else {
                 // EOF
                 break;
@@ -50,9 +116,6 @@ void fileSystemWorker::updateTable()
         }
     }
 
-    /// TODO: use this to show the disk IO stats
-    // https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-block
-    // check /sys/block/<disk>/<part> for the disks we found in mtab and then grab some extra data about them from their stat file
 
     // http://stackoverflow.com/questions/4965355/converting-statvfs-to-percentage-free-correctly
     for(unsigned int i=0; i<disks.size(); i++) {
@@ -70,12 +133,11 @@ void fileSystemWorker::updateTable()
             disks[i].usedSize = convertMemoryUnit((double)(device.f_blocks - device.f_bfree) * device.f_frsize,memoryUnit::b);
             disks[i].usedPercentage = disks[i].usedSize.id / disks[i].totalSize.id * 100;
         } else {
-            /// TODO: Throw here?
-            disks[i].totalSize = {0,memoryUnit::b};
-            disks[i].freeSize = disks[i].totalSize;
-            disks[i].usedSize = disks[i].totalSize;
+            throw std::runtime_error(qPrintable("'" + disks[i].mountPoint + "'' failed statvfs!"));
         }
     }
+
+    oldDisks = disks;
 
     diskTable->setUpdatesEnabled(false); // avoid inconsistant data
     diskTable->setSortingEnabled(false);
@@ -93,6 +155,7 @@ void fileSystemWorker::updateTable()
                                                             + QString::fromStdString(unitToString(p->freeSize.unit))));
             diskTable->setItem(index,5,new QTableWidgetItem(QString::number(p->usedPercentage) + QString::fromStdString("% (" +
                                                             dbl2str(truncateDouble(p->usedSize.id,1)) + unitToString(p->usedSize.unit)) + ")"));
+            diskTable->setItem(index,6,new QTableWidgetItem(QString::number(p->io) + "%"));
             diskTable->showRow(index);
         }
         index++;

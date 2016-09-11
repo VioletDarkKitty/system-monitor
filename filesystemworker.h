@@ -30,7 +30,11 @@ private:
         memoryEntry totalSize;
         memoryEntry usedSize;
         int usedPercentage;
+        float io;
+        long ioms;
     };
+    float timeSinceLastIOCheck;
+    std::vector<disk> oldDisks;
 };
 
 #endif // FILESYSTEMWORKER_H

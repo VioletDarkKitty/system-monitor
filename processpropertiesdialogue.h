@@ -59,7 +59,9 @@ private:
         varg("Shared Memory",memoryEntry sharedMemory = convertMemoryUnit(p->share*sysconf(_SC_PAGESIZE),memoryUnit::b);
                         return new TableMemoryItem(sharedMemory.unit,truncateDouble(sharedMemory.id,1));),
         varg("CPU",return new TableNumberItem(processPropertiesDialogue::getCpuPercentage(p));),
-        varg("CPU Time",return new TableNumberItem(QString::number(p->cstime + p->cutime));),
+        varg("CPU Time",{unsigned long long s = (p->stime + p->cstime + p->utime + p->cutime)/sysconf(_SC_CLK_TCK);
+                         unsigned long long m = s/60; s = s%60;
+                        return new TableNumberItem((QString::number(m)+":"+QString::number(s)));}),
         varg("Started",return new QTableWidgetItem(getProcessStartDate(p->start_time));),
         varg("Nice",return new TableNumberItem(QString::number(p->nice));),
         varg("Priority",return new TableNumberItem(QString::number(p->priority));),

@@ -45,7 +45,7 @@ private:
     QString getCpuPercentage(proc_t* p);
     // store the information about constructing the table as a vector of pairs of labels and functions which fill in that label's data
     #define MARKUSED(X)  ((void)(&(X))) // stop g++ complaining
-    #define varg(x,y) std::make_pair(x,[this](proc_t* p)->auto{MARKUSED(p); y}) // macro used to reduce the amount of typing in the vector initialisation
+    #define varg(x,y) std::make_pair(x,[this](proc_t* p)->QTableWidgetItem*{MARKUSED(p); y}) // macro used to reduce the amount of typing in the vector initialisation
     std::vector<std::pair<QString,std::function<QTableWidgetItem*(proc_t*)>>> propertiesTableData = {
         varg("Process Name",return new QTableWidgetItem(getProcessName(p));),
         varg("User",return new QTableWidgetItem(QString(p->euser) + " (" + QString::number(p->euid) + ")");),

@@ -97,27 +97,20 @@ namespace processTools {
 
     QString getProcessNameFromCmdLine(const pid_t pid)
     {
-        std::string temp;
-        try {
-            std::fstream fs;
-            fs.open("/proc/"+std::to_string((long)pid)+"/cmdline", std::fstream::in);
-            fs >> temp;
-            fs.close();
-        } catch(std::ifstream::failure e) {
-            return "FAILED TO READ PROC";
-        }
+        std::string cmdline = getProcessCmdline(pid).toStdString();
 
-        if (temp.size()<1) {
+        if (cmdline.size()<1) {
             return "";
         }
+
         // maintain linux paths
-        std::replace(temp.begin(),temp.end(),'\\','/');
-        return QFileInfo(QString::fromStdString(explode(temp,'\0')[0])).fileName();
+        std::replace(cmdline.begin(),cmdline.end(),'\\','/');
+        /// TODO: Sometimes this does not show the correct name
+        return QFileInfo(QString::fromStdString(explode(cmdline,'\0')[0])).fileName();
     }
 
     QString getProcessCmdline(pid_t pid)
     {
-        /// TODO: remove this awful code duplication!
         std::string temp;
         try {
             std::fstream fs;

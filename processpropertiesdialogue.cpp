@@ -93,6 +93,7 @@ QString processPropertiesDialogue::getCpuPercentage(proc_t* p)
         free(before);
     }
     before = p;
+    cpuTime = getTotalCpuTime();
     return cpuPercentage;
 }
 

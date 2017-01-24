@@ -86,7 +86,7 @@ private:
         varg("Command Line",return new QTableWidgetItem(getProcessCmdline(p->tgid));)
     };
     proc_t* before;
-    unsigned long long cpuTime;
+    double cpuTime;
 };
 
 #endif // PROCESSPROPERTIESDIALOGUE_H

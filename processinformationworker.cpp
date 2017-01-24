@@ -61,6 +61,7 @@ processInformationWorker::processInformationWorker(QObject *parent) :
 
     connect(searchField,SIGNAL(textChanged(QString)),this,SLOT(filterProcesses(QString)));
     connect(this,SIGNAL(signalFilterProcesses(QString)),this,SLOT(filterProcesses(QString)));
+    // set a function to run when a row is selected
     connect(processesTable->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
             this,SLOT(changeCurrentTableRowSelection(QModelIndex)));
 
@@ -68,6 +69,10 @@ processInformationWorker::processInformationWorker(QObject *parent) :
     createProcessesView();
 }
 
+/**
+ * @brief processInformationWorker::showProcessProperties
+ * Show the process' properties window. Do not block main thread
+ */
 void processInformationWorker::showProcessProperties()
 {
     processPropertiesDialogue* properties = new processPropertiesDialogue((QWidget*)mainWindow, selectedRowInfoID);
@@ -75,25 +80,35 @@ void processInformationWorker::showProcessProperties()
     properties->exec();
 }
 
+/**
+ * @brief processInformationWorker::changeCurrentTableRowSelection Select a row in the table of processes and remember its position
+ * @param current The selection model for the current selection
+ */
 void processInformationWorker::changeCurrentTableRowSelection(QModelIndex current)
 {
     // remember the tid so we can get the correct row again when we update the table
     selectedRowInfoID = processesTable->item(current.row(),3)->text().toInt();
 }
 
+/**
+ * @brief processInformationWorker::createProcessesView construct the process table with properly resized row heights
+ */
 void processInformationWorker::createProcessesView()
 {
     processesTable->setColumnCount(5);
     processesTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    //table->setHorizontalHeaderLabels(QString("HEADER 1;HEADER 2;HEADER 3").split(";"));
     processesTable->setHorizontalHeaderLabels(QString("Process Name;User;% CPU;PID;Memory;").split(";"));
     processesTable->verticalHeader()->setVisible(false);
     processesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     processesTable->resizeColumnsToContents();
 }
 
+/**
+ * @brief processInformationWorker::handleProcessStop Function to run when the user selects stop as an option for a process
+ */
 void processInformationWorker::handleProcessStop()
 {
+    /// TODO: ask for privilage escalation when controlling other users' processes
     int row = processesTable->currentIndex().row();
     // get PID
     int pid = processesTable->item(row,3)->text().toInt();
@@ -115,6 +130,12 @@ void processInformationWorker::handleProcessStop()
     }
 }
 
+/**
+ * @brief processInformationWorker::shouldHideProcess Return if the current row should be hidden when updating the table based on if
+ * the user has selected to only show processes that they own
+ * @param pid The pid of the process
+ * @return True if the process is not owned by the user and they only want to show their processes
+ */
 bool processInformationWorker::shouldHideProcess(unsigned int pid)
 {
     if (filterCheckbox->checkState() == Qt::CheckState::Checked) {
@@ -125,6 +146,10 @@ bool processInformationWorker::shouldHideProcess(unsigned int pid)
     return false;
 }
 
+/**
+ * @brief processInformationWorker::filterProcesses Hide all processes which do not match the search term
+ * @param filter The search term to use
+ */
 void processInformationWorker::filterProcesses(QString filter)
 {
     // loop over the table and hide items which do not match the search term given
@@ -141,6 +166,10 @@ void processInformationWorker::filterProcesses(QString filter)
     }
 }
 
+/**
+ * @brief processInformationWorker::updateTable
+ * Read the list of open processes and list them in the process table
+ */
 void processInformationWorker::updateTable() {
     // from http://codingrelic.geekhold.com/2011/02/listing-processes-with-libproc.html
     PROCTAB* proc = openproc(PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_FILLUSR | PROC_FILLCOM);
@@ -215,6 +244,10 @@ void processInformationWorker::updateTable() {
     prevProcs = processes;
 }
 
+/**
+ * @brief processInformationWorker::loop
+ * Run the loop for this thread
+ */
 void processInformationWorker::loop()
 {
     emit(updateTableData());

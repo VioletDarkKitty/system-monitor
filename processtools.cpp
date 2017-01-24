@@ -236,6 +236,11 @@ namespace processTools {
         return (processcpuTime / cpuTimeA) * 100.0 * sysconf(_SC_NPROCESSORS_CONF);
     }
 
+    /**
+     * @brief getProcessStartDate Convert a timestamp into a date in the form that is used in the current locale
+     * @param start_time The timestamp
+     * @return A date string
+     */
     QString getProcessStartDate(unsigned long long start_time)
     {
         __time_t time = getbtime() + start_time/Hertz;
@@ -245,6 +250,11 @@ namespace processTools {
         return QString(date);
     }
 
+    /**
+     * @brief getProcessStatus Get the status of a process as a long string from its proc_t
+     * @param p The proc_t structure of the process
+     * @return The long string form of the process status
+     */
     QString getProcessStatus(proc_t* p)
     {
         switch(p->state) {
@@ -261,7 +271,7 @@ namespace processTools {
             break;
 
             default:
-                return "Unknown state" + QString(p->state);
+                return "Unknown state: '" + QString(p->state) + "'";
         }
     }
 }

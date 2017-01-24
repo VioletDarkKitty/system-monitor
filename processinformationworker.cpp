@@ -39,7 +39,7 @@ processInformationWorker::processInformationWorker(QObject *parent) :
     loadAverage = parent->findChild<QLabel*>("loadAvgLabel");
     connect(this,SIGNAL(updateLoadAverage(QString)),loadAverage,SLOT(setText(QString)));
 
-    total_cpu_time = 0;
+    totalCpuTime = 0;
     selectedRowInfoID = 0;
 
     QAction* actionStop = new QAction("Stop",processesTable);
@@ -161,11 +161,14 @@ void processInformationWorker::updateTable() {
             for(auto &prevItr:prevProcs) {
                 if (newItr.first == prevItr.first) {
                     // PID matches, calculate the cpu
-                    newItr.second.pcpu = (unsigned int)calculateCPUPercentage(&prevItr.second,&newItr.second,total_cpu_time);
+                    newItr.second.pcpu = (unsigned int)calculateCPUPercentage(&prevItr.second,&newItr.second,totalCpuTime);
+                    break;
                 }
             }
         }
     }
+    // update the cpu time for next loop
+    totalCpuTime = getTotalCpuTime();
 
     processesTable->setUpdatesEnabled(false); // avoid inconsistant data
     processesTable->setSortingEnabled(false);

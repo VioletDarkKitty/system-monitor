@@ -24,14 +24,14 @@
 #include <time.h>
 
 namespace processTools {
-    /** exe_of() - Obtain the executable path a process is running
-     * @pid: Process ID
-     * @sizeptr: If specified, the allocated size is saved here
-     * @lenptr: If specified, the path length is saved here
-     * Returns the dynamically allocated pointer to the path,
-     * or NULL with errno set if an error occurs.
-    */
     // from http://stackoverflow.com/questions/24581908/c-lstat-on-proc-pid-exe
+    /**
+     * @brief exe_of Obtain the executable path a process is running
+     * @param pid: Process ID
+     * @param sizeptr: If specified, the allocated size is saved here
+     * @param lenptr: If specified, the path length is saved here
+     * @return the dynamically allocated pointer to the path, or NULL with errno set if an error occurs.
+     */
     char* exe_of(const pid_t pid, size_t *const sizeptr, size_t *const lenptr)
     {
         char   *exe_path = NULL;
@@ -97,6 +97,12 @@ namespace processTools {
         return exe_path;
     }
 
+    /**
+     * @brief explode Explode a string based on
+     * @param s The string to explode
+     * @param c The seperator to use
+     * @return A vector of the exploded string
+     */
     const std::vector<std::string> explode(const std::string& s, const char& c)
     {
         std::string buff{""};
@@ -112,6 +118,11 @@ namespace processTools {
         return v;
     }
 
+    /**
+     * @brief getProcessNameFromCmdLine Get the name of the process from its PID
+     * @param pid the pid of the process to get the name for
+     * @return The name of the process
+     */
     QString getProcessNameFromCmdLine(const pid_t pid)
     {
         std::string cmdline = getProcessCmdline(pid).toStdString();
@@ -126,6 +137,11 @@ namespace processTools {
         return QFileInfo(QString::fromStdString(explode(cmdline,'\0')[0])).fileName();
     }
 
+    /**
+     * @brief getProcessCmdline Get the command line that the process was executed with from its PID
+     * @param pid The pid of the process to get
+     * @return The command line that the process was run from
+     */
     QString getProcessCmdline(pid_t pid)
     {
         std::string temp;
@@ -144,6 +160,11 @@ namespace processTools {
         return QString::fromStdString(temp);
     }
 
+    /**
+     * @brief getProcessName Get the name of the process from a proc_t
+     * @param p The proc_t structure to use for getting the name of the process
+     * @return
+     */
     QString getProcessName(proc_t* p)
     {
         QString processName = "ERROR";
@@ -164,6 +185,10 @@ namespace processTools {
         return processName;
     }
 
+    /**
+     * @brief getTotalCpuTime Read the data from /proc/stat and get the total time the cpu has been busy
+     * @return The total cpu time
+     */
     unsigned long long getTotalCpuTime()
     {
         // from https://github.com/scaidermern/top-processes/blob/master/top_proc.c#L54
@@ -199,17 +224,16 @@ namespace processTools {
      * @brief calculateCPUPercentage
      * @param before - old proc_t of the process
      * @param after - new proc_t of the process
-     * @param cpuTime - cpuTime storage (will be modified!)
+     * @param cpuTime - the last total cpu time measurement
      * @return The cpu percentage of the process
      */
-    double calculateCPUPercentage(proc_t* before, proc_t* after, unsigned long long &cpuTime)
+    double calculateCPUPercentage(const proc_t* before, const proc_t* after, const unsigned long long &cpuTime)
     {
-        /// TODO: this cpu calculation is wrong
-        cpuTime = getTotalCpuTime() - cpuTime;
+        double cpuTimeA = getTotalCpuTime() - cpuTime;
         unsigned long long processcpuTime = ((after->utime + after->stime)
                 - (before->utime + before->stime));
         /// TODO: GSM has an option to divide by # cpus
-        return (processcpuTime / (float)cpuTime) * 100.0 * sysconf(_SC_NPROCESSORS_CONF);
+        return (processcpuTime / cpuTimeA) * 100.0 * sysconf(_SC_NPROCESSORS_CONF);
     }
 
     QString getProcessStartDate(unsigned long long start_time)

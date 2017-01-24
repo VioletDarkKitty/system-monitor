@@ -56,7 +56,7 @@ private:
     QLineEdit* searchField;
     bool shouldHideProcess(unsigned int pid);
     storedProcType prevProcs;
-    unsigned long long total_cpu_time;
+    unsigned long long totalCpuTime;
     int selectedRowInfoID;
     QLabel* loadAverage;
 };

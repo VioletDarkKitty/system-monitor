@@ -22,10 +22,11 @@
 
 namespace processTools {
 QString getProcessName(proc_t* p);
-double calculateCPUPercentage(proc_t* before, proc_t* after, unsigned long long &cpuTime);
+double calculateCPUPercentage(const proc_t* before, const proc_t* after, const unsigned long long &cpuTime);
 QString getProcessCmdline(pid_t pid);
 QString getProcessStartDate(unsigned long long start_time);
 QString getProcessStatus(proc_t* p);
+unsigned long long getTotalCpuTime();
 }
 
 #endif // PROCESSTOOLS

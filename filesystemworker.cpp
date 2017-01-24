@@ -40,6 +40,9 @@ fileSystemWorker::fileSystemWorker(QObject *parent)
     timeSinceLastIOCheck = 0;
 }
 
+/**
+ * @brief fileSystemWorker::createFilesystemView Create the filesystem table
+ */
 void fileSystemWorker::createFilesystemView()
 {
     diskTable->setColumnCount(7);
@@ -51,12 +54,12 @@ void fileSystemWorker::createFilesystemView()
     diskTable->resizeColumnsToContents();
 }
 
-void fileSystemWorker::updateTable()
+/**
+ * @brief fileSystemWorker::readMtabDisks Read the data from /etc/mtab and check it against
+ * @return A vector of physical disks that exist. Only the name, mount point, and type are filled in
+ */
+std::vector<fileSystemWorker::disk> fileSystemWorker::readMtabDisks()
 {
-    timespec ts;
-    clock_gettime(CLOCK_MONOTONIC,&ts);
-    timeSinceLastIOCheck = ts.tv_sec*1000 - timeSinceLastIOCheck;
-
     // mtab lists all of the mounted disks on the machine, need to check that they exist in /dev and are real devices to avoid listing
     // things like the proc and udev file systems
     QFile file("/etc/mtab");
@@ -81,9 +84,16 @@ void fileSystemWorker::updateTable()
         }
     }
 
+    return disks;
+}
 
-    // http://stackoverflow.com/questions/4965355/converting-statvfs-to-percentage-free-correctly
-    for(unsigned int i=0; i<disks.size(); i++) {        
+/**
+ * @brief fileSystemWorker::fillDiskStructures Fill in any remaining data in each of the given disks
+ * @param disks The list of disks to operate on
+ */
+void fileSystemWorker::fillDiskStructures(std::vector<disk> &disks)
+{
+    for(unsigned int i=0; i<disks.size(); i++) {
         struct statvfs device; // explicit struct because statvfs is also a function, grr...
         // use the mount point as the search for the device instead of the dev path as
         // using the dev path just checks the root disk for some reason!
@@ -117,6 +127,7 @@ void fileSystemWorker::updateTable()
         name = QFileInfo(name).fileName();
 
         QString parent = QFileInfo(name).fileName();
+        // /sys/block contains dm partitions, these should not be shown
         if (parent.section(QRegExp("\\d"),0,parent.size()) != "" && !parent.contains("dm")) {
             // this disk has a parent
             parent.remove(QRegExp("\\d"));
@@ -148,6 +159,21 @@ void fileSystemWorker::updateTable()
             }
         }
     }
+}
+
+/**
+ * @brief fileSystemWorker::updateTable Update the filesystem table
+ */
+void fileSystemWorker::updateTable()
+{
+    timespec ts;
+    clock_gettime(CLOCK_MONOTONIC,&ts);
+    timeSinceLastIOCheck = ts.tv_sec*1000 - timeSinceLastIOCheck;
+
+    std::vector<disk> disks = readMtabDisks();
+
+    // http://stackoverflow.com/questions/4965355/converting-statvfs-to-percentage-free-correctly
+    fillDiskStructures(disks);
 
     oldDisks = disks;
 
@@ -176,6 +202,9 @@ void fileSystemWorker::updateTable()
     diskTable->setSortingEnabled(true);
 }
 
+/**
+ * @brief fileSystemWorker::loop Run the loop for the thread
+ */
 void fileSystemWorker::loop()
 {
     emit(updateTableData());

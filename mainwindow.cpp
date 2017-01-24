@@ -54,6 +54,9 @@ MainWindow::~MainWindow()
     delete mainTabs;
 }
 
+/**
+ * @brief MainWindow::handleTabChange Handle when the tab is changed, pause the other threads
+ */
 void MainWindow::handleTabChange()
 {
     unsigned int index = mainTabs->currentIndex();
@@ -75,6 +78,9 @@ void MainWindow::handleTabChange()
     }
 }
 
+/**
+ * @brief MainWindow::showAboutWindow Show the about dialogue without blocking the main thread
+ */
 void MainWindow::showAboutWindow()
 {
     AboutDialogue* about = new AboutDialogue(this);

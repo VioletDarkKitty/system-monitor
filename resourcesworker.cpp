@@ -36,13 +36,11 @@ resourcesWorker::resourcesWorker(QObject *parent)
     connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));
 }
 
-void resourcesWorker::loop()
+/**
+ * @brief resourcesWorker::updateMemory Calculate the used memory and emit signals
+ */
+void resourcesWorker::updateMemory()
 {
-    meminfo(); // have procps read the memory
-    //std::cout << kb_main_used << "/" << kb_main_total << std::endl;
-    //std::cout << memory << "%" << std::endl;
-
-    /** MEMORY **/
     double memory = ((double)kb_main_used / kb_main_total) * 100;
     emit(updateMemoryBar(memory));
 
@@ -57,8 +55,14 @@ void resourcesWorker::loop()
     std::string memoryText = mainUsedValue + unitToString(mainUsed.unit)
             + " (" + memPercent + "%) of " + mainTotalValue + unitToString(mainTotal.unit);
     emit(updateMemoryText(QString::fromStdString(memoryText)));
+}
 
-    /** SWAP **/
+/**
+ * @brief resourcesWorker::updateSwap Calculate used swap and emit the appropriate signals
+ * If there is no swap, display 0
+ */
+void resourcesWorker::updateSwap()
+{
     if (kb_swap_total > 0.0) {
         // swap is active
         double swap = ((double)kb_swap_used / kb_swap_total) * 100;
@@ -79,6 +83,19 @@ void resourcesWorker::loop()
         emit(updateSwapBar(0));
         emit(updateSwapText("Not Available"));
     }
+}
+
+/**
+ * @brief resourcesWorker::loop Loop this threads execution
+ */
+void resourcesWorker::loop()
+{
+    meminfo(); // have procps read the memory
+    //std::cout << kb_main_used << "/" << kb_main_total << std::endl;
+    //std::cout << memory << "%" << std::endl;
+
+    updateMemory();
+    updateSwap();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }

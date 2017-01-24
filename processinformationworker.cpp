@@ -65,7 +65,7 @@ processInformationWorker::processInformationWorker(QObject *parent) :
     connect(processesTable->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
             this,SLOT(changeCurrentTableRowSelection(QModelIndex)));
 
-    connect(this,SIGNAL(updateTableData()),SLOT(updateTable()));    
+    connect(this,SIGNAL(updateTableData()),SLOT(updateTable()));
     createProcessesView();
 }
 

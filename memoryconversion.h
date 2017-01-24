@@ -33,7 +33,7 @@ extern const memoryEntry memoryLookup[memoryLookupLength];
 extern const memoryEntry memoryLookup[5];
 int lookupUnit(memoryUnit unit);
 std::string unitToString(memoryUnit unit);
-double truncateDouble(double input, int prec);
+double truncateDouble(double input, unsigned int prec);
 memoryUnit nextMemoryUnit(memoryUnit unit);
 memoryUnit prevMemoryUnit(memoryUnit unit);
 memoryEntry convertMemoryUnit(double memory, memoryUnit unit, int kb=1024);

@@ -36,6 +36,8 @@ private:
     void loop();
     QProgressBar *memoryBar, *swapBar;
     QLabel *memoryLabel, *swapLabel;
+    void updateMemory();
+    void updateSwap();
 };
 
 #endif // RESOURCESWORKER_H

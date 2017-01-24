@@ -33,6 +33,9 @@ workerThread::~workerThread()
     }
 }
 
+/**
+ * @brief workerThread::start Start the thread
+ */
 void workerThread::start()
 {
     if (workerThreadThread!=nullptr) {
@@ -44,22 +47,39 @@ void workerThread::start()
     workerThreadThread->detach();
 }
 
+/**
+ * @brief workerThread::quit Mark the thread as quiting
+ * The thread may take some time to exit after this is done, please wait until running shows false
+ */
 void workerThread::quit()
 {
     shouldQuit = true;
     shouldPause = false;
 }
 
+/**
+ * @brief workerThread::running Return if the thread is running and not going to pause next loop
+ * @return If the thread is running
+ */
 bool workerThread::running()
 {
     return (workerThreadThread!=nullptr) && !shouldPause;
 }
 
+/**
+ * @brief workerThread::setPaused Set the pause state for the thread
+ * @param pause If the thread should be paused when it next loops
+ */
 void workerThread::setPaused(bool pause)
 {
     shouldPause = pause;
 }
 
+/**
+ * @brief workerThread::run Begin looping this thread
+ * Extended classes are expected to have a loop function to run
+ * Blocking functions should be kept to a minimum in derived threads as quit will only set flags not throw
+ */
 void workerThread::run()
 {
     try {
@@ -71,6 +91,7 @@ void workerThread::run()
             }
 
             if (shouldQuit) {
+                /// TODO: Use a better exception, other functions may throw
                 throw std::exception();
             }
         }

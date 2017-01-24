@@ -52,6 +52,8 @@ private:
     };
     float timeSinceLastIOCheck;
     std::vector<disk> oldDisks;
+    std::vector<disk> readMtabDisks();
+    void fillDiskStructures(std::vector<disk> &disks);
 };
 
 #endif // FILESYSTEMWORKER_H

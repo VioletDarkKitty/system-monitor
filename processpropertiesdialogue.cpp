@@ -54,6 +54,10 @@ processPropertiesDialogue::~processPropertiesDialogue()
     delete ui;
 }
 
+/**
+ * @brief processPropertiesDialogue::updateTableData
+ * Update the process' properties table
+ */
 void processPropertiesDialogue::updateTableData()
 {
     PROCTAB *tab = openproc(PROC_PID | PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_FILLUSR | PROC_FILLNS);
@@ -73,6 +77,7 @@ void processPropertiesDialogue::updateTableData()
         // set the window title
         QString title = procName + " (" + "PID " + QString::number(p->tid) + ")";
         this->setWindowTitle(title);
+        // run the function from the propertiesTableData for each row
         for(unsigned int i=0; i<propertiesTableData.size(); i++) {
             processInfoTable->setItem(i,1,propertiesTableData.at(i).second(p));
         }
@@ -83,6 +88,11 @@ void processPropertiesDialogue::updateTableData()
     closeproc(tab);
 }
 
+/**
+ * @brief processPropertiesDialogue::getCpuPercentage Calculate the cpu % for the process
+ * @param p The proc_t structure for the process to use
+ * @return The string containing the process' cpu %
+ */
 QString processPropertiesDialogue::getCpuPercentage(proc_t* p)
 {
     QString cpuPercentage;
@@ -97,6 +107,10 @@ QString processPropertiesDialogue::getCpuPercentage(proc_t* p)
     return cpuPercentage;
 }
 
+/**
+ * @brief processPropertiesDialogue::loop
+ * Run the loop for this thread
+ */
 void processPropertiesDialogue::loop()
 {
     emit(updateTable());

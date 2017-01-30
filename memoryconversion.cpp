@@ -71,6 +71,17 @@ namespace memoryConversion {
     }
 
     /**
+     * @brief roundDouble Round a double without completely removing trailing decimal places
+     * @param input The double to round
+     * @param prec The number of places to round to, defaulted at 1
+     * @return The rounded double
+     */
+    double roundDouble(double input, unsigned int prec)
+    {
+        return std::roundf(std::pow(10, prec) * input) / std::pow(10, prec);
+    }
+
+    /**
      * @brief nextMemoryUnit Find the unit which is next after the given unit
      * @param unit The unit to find the next unit from
      * @return The next unit to the given unit or the given unit if there is no other unit

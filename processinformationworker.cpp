@@ -47,6 +47,7 @@ processInformationWorker::processInformationWorker(QObject *parent) :
 
     QAction* actionProperties = new QAction("Properties",processesTable);
     connect(actionProperties,SIGNAL(triggered(bool)),this,SLOT(showProcessProperties()));
+    connect(processesTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(showProcessProperties()));
 
     QList<QAction*> rightClickActions;
     rightClickActions.push_back(actionStop);

@@ -16,10 +16,10 @@ target.path = /usr/bin
 desktop.path = /usr/share/applications
 desktop.files += system-monitor.desktop
 
-icon.path = /usr/share/system-monitor/
-icon.files += system-monitor.png
+INSTALLS += target desktop
 
-INSTALLS += target desktop icon
+#icon.path = utilities-system-monitor
+#icon.files += system-monitor.png
 
 SOURCES += main.cpp\
         mainwindow.cpp \

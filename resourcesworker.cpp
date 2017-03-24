@@ -20,7 +20,9 @@
 #include <iostream>
 #include <string>
 #include "memoryconversion.h"
+#include "cputools.h"
 using namespace memoryConversion;
+using namespace cpuTools;
 
 resourcesWorker::resourcesWorker(QObject *parent)
     : QObject(parent), workerThread()
@@ -29,11 +31,68 @@ resourcesWorker::resourcesWorker(QObject *parent)
     memoryLabel = parent->findChild<QLabel*>("memoryLabel");
     swapBar = parent->findChild<QProgressBar*>("swapBar");
     swapLabel = parent->findChild<QLabel*>("swapLabel");
+    cpuPlot = dynamic_cast<QCustomPlot*>(parent->findChild<QWidget*>("cpuPlot"));
+    cpuPlot = new QCustomPlot(parent->findChild<QTabWidget*>("tabWidgetMain"));
 
     connect(this,SIGNAL(updateMemoryBar(int)),memoryBar,SLOT(setValue(int)));
     connect(this,SIGNAL(updateMemoryText(QString)),memoryLabel,SLOT(setText(QString)));
     connect(this,SIGNAL(updateSwapBar(int)),swapBar,SLOT(setValue(int)));
     connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));
+    connect(this,SIGNAL(updateCpuPlotSIG(QVector<double>)),this,SLOT(updateCpuPlotSLO(QVector<double>)));
+
+    // add 0'd data to the cpuPlotData at (60 seconds / update time) times. The default update time is 1 second
+    /// TODO: add way to change update time
+    std::vector<double> data;
+    data.push_back(0);
+    for(unsigned int i=0; i<(60/1); i++) {
+        cpuPlotData.push_back(data);
+    }
+}
+
+void resourcesWorker::updateCpuPlotSLO(QVector<double> values)
+{
+    QVector<double> x(61); // initialize with entries 60..0
+    for (int i=61; i<0; ++i)
+    {
+      x[i] = i;
+    }
+
+    cpuPlot->clearGraphs();
+    cpuPlot->addGraph();
+    cpuPlot->graph(0)->setData(x, values);
+
+    //customPlot->xAxis->setLabel("x");
+    //customPlot->yAxis->setLabel("y");
+
+    cpuPlot->xAxis->setRange(0, 60);
+    cpuPlot->yAxis->setRange(0, 100);
+}
+
+void resourcesWorker::updateCpu()
+{
+    std::vector<cpuStruct> cpuTimes = getCpuTimes();
+    if (prevCpuTimes.size() != 0) {
+        std::vector<double> cpuPercentages = calculateCpuPercentages(cpuTimes, prevCpuTimes);
+
+        /*for(unsigned int i=0; i<cpuPercentages.size(); i++) {
+            std::cout << cpuPercentages.at(i) << std::endl;
+        }*/
+
+        cpuPlotData.pop_front();
+        cpuPlotData.push_back(cpuPercentages);
+    }
+    prevCpuTimes = cpuTimes;
+
+    // construct the qvectors to use to plot
+    QVector<double> plotting;
+    for(unsigned int i=0; i<cpuPlotData.size(); i++) {
+        for(unsigned int j=0; j<cpuPlotData.at(i).size(); j++) {
+            plotting.push_back(cpuPlotData.at(i).at(j));
+        }
+    }
+    emit(updateCpuPlotSLO(plotting));
+    //updateCpuPlotSLO(plotting);
+
 }
 
 /**
@@ -94,6 +153,7 @@ void resourcesWorker::loop()
     //std::cout << kb_main_used << "/" << kb_main_total << std::endl;
     //std::cout << memory << "%" << std::endl;
 
+    updateCpu();
     updateMemory();
     updateSwap();
 

@@ -11,3 +11,7 @@ Dependancies
 
 System monitor depends on libprocps, this can be installed on debian
 based systems from the package libprocps-dev.
+
+## References
+
+* QCustomPlot - [http://qcustomplot.com/](http://qcustomplot.com/)

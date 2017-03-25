@@ -34,6 +34,7 @@ class resourcesWorker : public QObject, public workerThread
     Q_OBJECT
 public:
     explicit resourcesWorker(QObject *parent = 0);
+    ~resourcesWorker();
 signals:
     void updateMemoryBar(int value);
     void updateMemoryText(QString value);

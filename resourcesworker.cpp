@@ -35,7 +35,15 @@ resourcesWorker::resourcesWorker(QObject *parent)
     connect(this,SIGNAL(updateMemoryBar(int)),memoryBar,SLOT(setValue(int)));
     connect(this,SIGNAL(updateMemoryText(QString)),memoryLabel,SLOT(setText(QString)));
     connect(this,SIGNAL(updateSwapBar(int)),swapBar,SLOT(setValue(int)));
-    connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));    
+    connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));
+    plottingData = nullptr;
+}
+
+resourcesWorker::~resourcesWorker()
+{
+    if (plottingData != nullptr) {
+        delete plottingData;
+    }
 }
 
 void resourcesWorker::updateCpu()
@@ -56,7 +64,9 @@ void resourcesWorker::updateCpu()
     prevCpuTimes = cpuTimes;
 
     // construct the qvectors to use to plot
-    /// TODO: memory leak?
+    if (plottingData != nullptr) {
+        delete plottingData;
+    }
     plottingData = new QVector<QVector<double>>();
 
     // The data is arranged in vectors but each vector has points that are intended

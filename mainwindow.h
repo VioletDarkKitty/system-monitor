@@ -23,6 +23,7 @@
 #include "resourcesworker.h"
 #include "filesystemworker.h"
 #include <QAction>
+#include "qcustomplot.h"
 
 namespace Ui {
 class MainWindow;
@@ -37,6 +38,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+public slots:
+    void updateCpuPlotSLO(const qcustomplotCpuVector *values);
+
 private slots:
     void handleTabChange();
     void showAboutWindow();
@@ -47,6 +51,7 @@ private:
     fileSystemWorker* filesystemThread;
     QTabWidget* mainTabs;
     QAction *quitAction, *aboutAction;
+    QCustomPlot *cpuPlot;
 };
 
 #endif // MAINWINDOW_H

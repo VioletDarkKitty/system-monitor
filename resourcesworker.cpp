@@ -31,41 +31,11 @@ resourcesWorker::resourcesWorker(QObject *parent)
     memoryLabel = parent->findChild<QLabel*>("memoryLabel");
     swapBar = parent->findChild<QProgressBar*>("swapBar");
     swapLabel = parent->findChild<QLabel*>("swapLabel");
-    cpuPlot = dynamic_cast<QCustomPlot*>(parent->findChild<QWidget*>("cpuPlot"));
-    cpuPlot = new QCustomPlot(parent->findChild<QTabWidget*>("tabWidgetMain"));
 
     connect(this,SIGNAL(updateMemoryBar(int)),memoryBar,SLOT(setValue(int)));
     connect(this,SIGNAL(updateMemoryText(QString)),memoryLabel,SLOT(setText(QString)));
     connect(this,SIGNAL(updateSwapBar(int)),swapBar,SLOT(setValue(int)));
-    connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));
-    connect(this,SIGNAL(updateCpuPlotSIG(QVector<double>)),this,SLOT(updateCpuPlotSLO(QVector<double>)));
-
-    // add 0'd data to the cpuPlotData at (60 seconds / update time) times. The default update time is 1 second
-    /// TODO: add way to change update time
-    std::vector<double> data;
-    data.push_back(0);
-    for(unsigned int i=0; i<(60/1); i++) {
-        cpuPlotData.push_back(data);
-    }
-}
-
-void resourcesWorker::updateCpuPlotSLO(QVector<double> values)
-{
-    QVector<double> x(61); // initialize with entries 60..0
-    for (int i=61; i<0; ++i)
-    {
-      x[i] = i;
-    }
-
-    cpuPlot->clearGraphs();
-    cpuPlot->addGraph();
-    cpuPlot->graph(0)->setData(x, values);
-
-    //customPlot->xAxis->setLabel("x");
-    //customPlot->yAxis->setLabel("y");
-
-    cpuPlot->xAxis->setRange(0, 60);
-    cpuPlot->yAxis->setRange(0, 100);
+    connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));    
 }
 
 void resourcesWorker::updateCpu()
@@ -78,21 +48,45 @@ void resourcesWorker::updateCpu()
             std::cout << cpuPercentages.at(i) << std::endl;
         }*/
 
-        cpuPlotData.pop_front();
+        if (cpuPlotData.size() == 60) {
+            cpuPlotData.pop_front();
+        }
         cpuPlotData.push_back(cpuPercentages);
     }
     prevCpuTimes = cpuTimes;
 
     // construct the qvectors to use to plot
-    QVector<double> plotting;
-    for(unsigned int i=0; i<cpuPlotData.size(); i++) {
+    /// TODO: memory leak?
+    plottingData = new QVector<QVector<double>>();
+
+    // The data is arranged in vectors but each vector has points that are intended
+    // for multiple plots on multi core machines.
+    // Seperate out the data by reading the number of doubles in the initial vector
+    if (cpuPlotData.size() == 0) {
+        return; // obviously we cant read the initial vector if it is blank
+    }
+
+    for(unsigned int i=0; i<cpuPlotData.at(0).size(); i++) {
+        QVector<double> headingVector;
+        headingVector.push_back(cpuPlotData.at(0).at(i));
+        plottingData->push_back(headingVector);
+    }
+
+    // now that the initial qvectors are filled, we can append the rest of the data
+    for(unsigned int i=1; i<cpuPlotData.size(); i++) {
         for(unsigned int j=0; j<cpuPlotData.at(i).size(); j++) {
-            plotting.push_back(cpuPlotData.at(i).at(j));
+            (*plottingData)[j].push_back(cpuPlotData.at(i).at(j));
         }
     }
-    emit(updateCpuPlotSLO(plotting));
-    //updateCpuPlotSLO(plotting);
 
+    // there might not be enough data in each array so pad with 0s on the front if so
+    for(int i=0; i<plottingData->size(); i++) {
+        for(unsigned int j=60 - plottingData->at(i).size(); j>0; j--) {
+            (*plottingData)[i].push_front((double)0);
+        }
+    }
+
+    emit(updateCpuPlotSIG(plottingData));
 }
 
 /**

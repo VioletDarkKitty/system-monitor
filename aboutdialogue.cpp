@@ -27,6 +27,14 @@ AboutDialogue::AboutDialogue(QWidget *parent) :
 
     QPushButton* closeButton = this->findChild<QPushButton*>("closeButton");
     connect(closeButton,SIGNAL(clicked(bool)),this,SLOT(close()));
+
+    QLabel* versionLabel = this->findChild<QLabel*>("versionLabel");
+    QString version = QString::number(VERSION_MAJOR) + "." + QString::number(VERSION_MINOR) + "." + QString::number(VERSION_BUILD);
+    versionLabel->setText(version);
+
+    QIcon appIcon = QIcon::fromTheme("utilities-system-monitor",QIcon::fromTheme("application-x-executable"));
+    QLabel* programIcon = this->findChild<QLabel*>("programIcon");
+    programIcon->setPixmap(appIcon.pixmap(appIcon.actualSize(QSize(128,128))));
 }
 
 AboutDialogue::~AboutDialogue()

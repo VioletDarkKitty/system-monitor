@@ -21,6 +21,17 @@ INSTALLS += target desktop
 #icon.path = utilities-system-monitor
 #icon.files += system-monitor.png
 
+VERSION_MAJOR = 0
+VERSION_MINOR = 0
+VERSION_BUILD = 58
+
+DEFINES += "VERSION_MAJOR=$$VERSION_MAJOR"\
+       "VERSION_MINOR=$$VERSION_MINOR"\
+       "VERSION_BUILD=$$VERSION_BUILD"
+
+#Target version
+VERSION = $${VERSION_MAJOR}.$${VERSION_MINOR}.$${VERSION_BUILD}
+
 SOURCES += main.cpp\
         mainwindow.cpp \
     processinformationworker.cpp \

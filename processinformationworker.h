@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <QLabel>
+#include <map>
 
 class processInformationWorker : public QObject, public workerThread
 {
@@ -59,6 +60,7 @@ private:
     unsigned long long totalCpuTime;
     int selectedRowInfoID;
     QLabel* loadAverage;
+    std::map<QString, QIcon> processIconCache;
 };
 
 #endif // PROCESSINFORMATIONWORKER_H

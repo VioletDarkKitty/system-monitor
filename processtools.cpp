@@ -22,6 +22,9 @@
 #include <QFileInfo>
 #include <proc/sysinfo.h>
 #include <time.h>
+#include <qdiriterator.h>
+#include <QIcon>
+#include <QMap>
 
 namespace processTools {
     // from http://stackoverflow.com/questions/24581908/c-lstat-on-proc-pid-exe
@@ -276,5 +279,62 @@ namespace processTools {
             default:
                 return "Unknown state: '" + QString(p->state) + "'";
         }
+    }
+
+    /**
+     * @brief getProcessIconFromName Get the icon for a process given its name
+     * @param procname The name of the process
+     * @return The process' icon or the default executable icon if none was found
+     */
+    QIcon getProcessIconFromName(const QString procName, std::map<QString, QIcon> &processIconMapCache)
+    {
+        auto pos = processIconMapCache.find(procName);
+        if (pos != processIconMapCache.end()) {
+            return pos->second;
+        }
+
+        QDirIterator dir("/usr/share/applications", QDirIterator::Subdirectories);
+        std::string desktopFile;
+        QIcon defaultExecutableIcon = QIcon::fromTheme("application-x-executable");
+        while(dir.hasNext()) {
+            if (dir.fileInfo().suffix() == "desktop") {
+                if (dir.fileName().toLower().contains(procName.toLower())) {
+                    desktopFile = dir.filePath().toStdString();
+                    break;
+                }
+            }
+            dir.next();
+        }
+
+        if (desktopFile.size() == 0) {
+            return defaultExecutableIcon;
+        }
+
+        std::ifstream in;
+        in.open(desktopFile);
+        QIcon icon = defaultExecutableIcon;
+        QString iconName;
+        while(!in.eof()) {
+            std::string line;
+            std::getline(in,line);
+            iconName = QString::fromStdString(line);
+            if (iconName.startsWith("Icon=")) {
+                iconName.remove(0,5); // remove the first 5 chars
+            } else {
+                continue;
+            }
+
+            if (iconName.contains("/")) {
+                // this is probably a path to the file, use that instead of the theme icon name
+                icon = QIcon(iconName);
+            } else {
+                icon = QIcon::fromTheme(iconName,defaultExecutableIcon);
+                break;
+            }
+        }
+        in.close();
+
+        processIconMapCache[procName] = icon;
+        return icon;
     }
 }

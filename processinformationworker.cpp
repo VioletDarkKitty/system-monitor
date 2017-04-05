@@ -162,7 +162,7 @@ void processInformationWorker::filterProcesses(QString filter)
         /// so just check the PID manually
         if (!shouldHideProcess(getpwnam(processesTable->item(i,1)->text().toStdString().c_str())->pw_uid)) {
             QTableWidgetItem* item = processesTable->item(i,0); // process name
-            processesTable->setRowHidden(i, !(item->text().contains(filter)));
+            processesTable->setRowHidden(i, !(item->text().toLower().contains(filter.toLower())));
         }
     }
 }
@@ -206,7 +206,10 @@ void processInformationWorker::updateTable() {
     unsigned int index = 0;
     for(auto &i:processes) {
         proc_t* p = (&i.second);
-        processesTable->setItem(index,0,new QTableWidgetItem(getProcessName(p)));
+        QString processName = getProcessName(p);
+        QTableWidgetItem* processNameTableItem = new QTableWidgetItem(processName);
+        processNameTableItem->setIcon(getProcessIconFromName(processName,processIconCache));
+        processesTable->setItem(index,0,processNameTableItem);
         QString user = p->euser;
         processesTable->setItem(index,1,new QTableWidgetItem(user));
         //std::cout << p->pcpu << std::endl;

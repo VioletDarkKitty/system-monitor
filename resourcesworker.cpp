@@ -20,7 +20,9 @@
 #include <iostream>
 #include <string>
 #include "memoryconversion.h"
+#include "cputools.h"
 using namespace memoryConversion;
+using namespace cpuTools;
 
 resourcesWorker::resourcesWorker(QObject *parent)
     : QObject(parent), workerThread()
@@ -34,6 +36,67 @@ resourcesWorker::resourcesWorker(QObject *parent)
     connect(this,SIGNAL(updateMemoryText(QString)),memoryLabel,SLOT(setText(QString)));
     connect(this,SIGNAL(updateSwapBar(int)),swapBar,SLOT(setValue(int)));
     connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));
+    plottingData = nullptr;
+}
+
+resourcesWorker::~resourcesWorker()
+{
+    if (plottingData != nullptr) {
+        delete plottingData;
+    }
+}
+
+void resourcesWorker::updateCpu()
+{
+    std::vector<cpuStruct> cpuTimes = getCpuTimes();
+    if (prevCpuTimes.size() != 0) {
+        std::vector<double> cpuPercentages = calculateCpuPercentages(cpuTimes, prevCpuTimes);
+
+        /*for(unsigned int i=0; i<cpuPercentages.size(); i++) {
+            std::cout << cpuPercentages.at(i) << std::endl;
+        }*/
+
+        if (cpuPlotData.size() == 60) {
+            cpuPlotData.pop_front();
+        }
+        cpuPlotData.push_back(cpuPercentages);
+    }
+    prevCpuTimes = cpuTimes;
+
+    // construct the qvectors to use to plot
+    if (plottingData != nullptr) {
+        delete plottingData;
+    }
+    plottingData = new QVector<QVector<double>>();
+
+    // The data is arranged in vectors but each vector has points that are intended
+    // for multiple plots on multi core machines.
+    // Seperate out the data by reading the number of doubles in the initial vector
+    if (cpuPlotData.size() == 0) {
+        return; // obviously we cant read the initial vector if it is blank
+    }
+
+    for(unsigned int i=0; i<cpuPlotData.at(0).size(); i++) {
+        QVector<double> headingVector;
+        headingVector.push_back(cpuPlotData.at(0).at(i));
+        plottingData->push_back(headingVector);
+    }
+
+    // now that the initial qvectors are filled, we can append the rest of the data
+    for(unsigned int i=1; i<cpuPlotData.size(); i++) {
+        for(unsigned int j=0; j<cpuPlotData.at(i).size(); j++) {
+            (*plottingData)[j].push_back(cpuPlotData.at(i).at(j));
+        }
+    }
+
+    // there might not be enough data in each array so pad with 0s on the front if so
+    for(int i=0; i<plottingData->size(); i++) {
+        for(unsigned int j=60 - plottingData->at(i).size(); j>0; j--) {
+            (*plottingData)[i].push_front((double)0);
+        }
+    }
+
+    emit(updateCpuPlotSIG(plottingData));
 }
 
 /**
@@ -94,6 +157,7 @@ void resourcesWorker::loop()
     //std::cout << kb_main_used << "/" << kb_main_total << std::endl;
     //std::cout << memory << "%" << std::endl;
 
+    updateCpu();
     updateMemory();
     updateSwap();
 

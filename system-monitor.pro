@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -41,7 +41,9 @@ SOURCES += main.cpp\
     filesystemworker.cpp \
     processpropertiesdialogue.cpp \
     processtools.cpp \
-    aboutdialogue.cpp
+    aboutdialogue.cpp \
+    qcustomplot.cpp \
+    cputools.cpp
 
 HEADERS  += mainwindow.h \
     processinformationworker.h \
@@ -53,7 +55,9 @@ HEADERS  += mainwindow.h \
     filesystemworker.h \
     processpropertiesdialogue.h \
     processtools.h \
-    aboutdialogue.h
+    aboutdialogue.h \
+    qcustomplot.h \
+    cputools.h
 
 FORMS    += mainwindow.ui \
     processpropertiesdialogue.ui \

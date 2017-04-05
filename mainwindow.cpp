@@ -42,6 +42,10 @@ MainWindow::MainWindow(QWidget *parent) :
     mainTabs = findChild<QTabWidget*>("tabWidgetMain");
     connect(mainTabs, SIGNAL(currentChanged(int)), this, SLOT(handleTabChange()));
 
+    cpuPlot = reinterpret_cast<QCustomPlot*>(ui->tabResources->findChild<QWidget*>("cpuPlot"));
+    connect(resourcesThread,SIGNAL(updateCpuPlotSIG(const qcustomplotCpuVector*)),
+            this,SLOT(updateCpuPlotSLO(const qcustomplotCpuVector*)));
+
     handleTabChange();
 }
 
@@ -52,6 +56,43 @@ MainWindow::~MainWindow()
     delete resourcesThread;
     delete filesystemThread;
     delete mainTabs;
+}
+
+void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector *values)
+{
+    QVector<double> x(60); // initialize with entries 60..0
+    for (int i=59; i>0; --i)
+    {
+      x[i] = i;
+    }
+
+    static bool previouslyPlotted = false;
+    int size = values->size();
+    if (size == 0) {
+        return;
+    }
+
+    #define colourNamesLen 4
+    const QString colourNames[] = {
+        "yellow","red","green","blue"
+    };
+    for(int i=0; i<size; i++) {
+        if (!previouslyPlotted) {
+            cpuPlot->addGraph();
+        } else {
+            cpuPlot->graph(i)->data()->clear();
+            cpuPlot->graph(i)->setPen(QPen(QColor(colourNames[i % colourNamesLen])));
+        }
+        cpuPlot->graph(i)->setData(x, values->at(i));
+    }
+    previouslyPlotted = true;
+
+    //customPlot->xAxis->setLabel("x");
+    //customPlot->yAxis->setLabel("y");
+
+    cpuPlot->xAxis->setRange(0, 60);
+    cpuPlot->yAxis->setRange(0, 100);
+    cpuPlot->replot();
 }
 
 /**

@@ -21,23 +21,36 @@
 #include "workerthread.h"
 #include <QProgressBar>
 #include <QLabel>
+#include "qcustomplot.h"
+#include <vector>
+#include <QVector>
+#include "cputools.h"
+#include <deque>
+
+typedef QVector<QVector<double>> qcustomplotCpuVector;
 
 class resourcesWorker : public QObject, public workerThread
 {
     Q_OBJECT
 public:
     explicit resourcesWorker(QObject *parent = 0);
+    ~resourcesWorker();
 signals:
     void updateMemoryBar(int value);
     void updateMemoryText(QString value);
     void updateSwapBar(int value);
     void updateSwapText(QString value);
+    void updateCpuPlotSIG(const qcustomplotCpuVector *values);
 private:
     void loop();
     QProgressBar *memoryBar, *swapBar;
     QLabel *memoryLabel, *swapLabel;
     void updateMemory();
     void updateSwap();
+    void updateCpu();
+    std::vector<cpuTools::cpuStruct> prevCpuTimes;
+    std::deque<std::vector<double>> cpuPlotData;
+    QVector<QVector<double>> *plottingData;
 };
 
 #endif // RESOURCESWORKER_H

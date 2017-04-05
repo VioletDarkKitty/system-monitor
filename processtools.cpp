@@ -148,7 +148,7 @@ namespace processTools {
         try {
             std::fstream fs;
             fs.open("/proc/"+std::to_string((long)pid)+"/cmdline", std::fstream::in);
-            fs >> temp;
+            std::getline(fs,temp);
             fs.close();
         } catch(std::ifstream::failure e) {
             return "FAILED TO READ PROC";

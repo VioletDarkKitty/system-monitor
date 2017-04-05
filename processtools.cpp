@@ -134,7 +134,7 @@ namespace processTools {
         // maintain linux paths
         std::replace(cmdline.begin(),cmdline.end(),'\\','/');
         /// TODO: Sometimes this does not show the correct name
-        return QFileInfo(QString::fromStdString(explode(cmdline,'\0')[0])).fileName();
+        return QFileInfo(QString::fromStdString(explode(cmdline,' ')[0])).fileName();
     }
 
     /**
@@ -153,6 +153,9 @@ namespace processTools {
         } catch(std::ifstream::failure e) {
             return "FAILED TO READ PROC";
         }
+
+        // change \0 to ' '
+        std::replace(temp.begin(),temp.end(),'\0',' ');
 
         if (temp.size()<1) {
             return "";

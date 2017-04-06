@@ -208,6 +208,7 @@ void processInformationWorker::updateTable() {
         proc_t* p = (&i.second);
         QString processName = getProcessName(p);
         QTableWidgetItem* processNameTableItem = new QTableWidgetItem(processName);
+        processNameTableItem->setToolTip(getProcessCmdline(p->tid));
         processNameTableItem->setIcon(getProcessIconFromName(processName,processIconCache));
         processesTable->setItem(index,0,processNameTableItem);
         QString user = p->euser;

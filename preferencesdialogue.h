@@ -15,44 +15,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef PREFERENCESDIALOG_H
+#define PREFERENCESDIALOG_H
 
-#include <QMainWindow>
-#include "processinformationworker.h"
-#include "resourcesworker.h"
-#include "filesystemworker.h"
-#include <QAction>
-#include "qcustomplot.h"
+#include <QDialog>
 
 namespace Ui {
-class MainWindow;
+class PreferencesDialogue;
 }
 
-class MainWindow : public QMainWindow
+class PreferencesDialogue : public QDialog
 {
     Q_OBJECT
 
 public:
-    Ui::MainWindow *ui;
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-
-public slots:
-    void updateCpuPlotSLO(const qcustomplotCpuVector *values);
-
-private slots:
-    void handleTabChange();
-    void showAboutWindow();
-    void showPreferencesWindow();
+    explicit PreferencesDialogue(QWidget *parent = 0);
+    ~PreferencesDialogue();
 
 private:
-    processInformationWorker* processesThread;
-    resourcesWorker* resourcesThread;
-    fileSystemWorker* filesystemThread;
-    QTabWidget* mainTabs;
-    QAction *quitAction, *aboutAction, *preferencesAction;
-    QCustomPlot *cpuPlot;
+    Ui::PreferencesDialogue *ui;
 };
 
-#endif // MAINWINDOW_H
+#endif // PREFERENCESDIALOG_H

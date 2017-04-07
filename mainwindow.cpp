@@ -18,6 +18,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "aboutdialogue.h"
+#include "preferencesdialogue.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -38,6 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     aboutAction = this->findChild<QAction*>("actionAbout");
     connect(aboutAction,SIGNAL(triggered(bool)),this,SLOT(showAboutWindow()));
+
+    preferencesAction = this->findChild<QAction*>("actionPreferences");
+    connect(preferencesAction,SIGNAL(triggered(bool)),this,SLOT(showPreferencesWindow()));
 
     mainTabs = findChild<QTabWidget*>("tabWidgetMain");
     connect(mainTabs, SIGNAL(currentChanged(int)), this, SLOT(handleTabChange()));
@@ -127,4 +131,13 @@ void MainWindow::showAboutWindow()
     AboutDialogue* about = new AboutDialogue(this);
     //about->show();
     about->exec();
+}
+
+/**
+ * @brief MainWindow::showPreferencesWindow Show the preferences dialogue
+ */
+void MainWindow::showPreferencesWindow()
+{
+    PreferencesDialogue* pref = new PreferencesDialogue(this);
+    pref->exec();
 }

@@ -43,7 +43,8 @@ SOURCES += main.cpp\
     processtools.cpp \
     aboutdialogue.cpp \
     qcustomplot.cpp \
-    cputools.cpp
+    cputools.cpp \
+    preferencesdialogue.cpp
 
 HEADERS  += mainwindow.h \
     processinformationworker.h \
@@ -57,11 +58,13 @@ HEADERS  += mainwindow.h \
     processtools.h \
     aboutdialogue.h \
     qcustomplot.h \
-    cputools.h
+    cputools.h \
+    preferencesdialogue.h
 
 FORMS    += mainwindow.ui \
     processpropertiesdialogue.ui \
-    aboutdialogue.ui
+    aboutdialogue.ui \
+    preferencesdialogue.ui
 
 QMAKE_CXXFLAGS += -std=c++14 -Wall
 LIBS += -L"libprocps" -lprocps -lstdc++fs

@@ -268,6 +268,9 @@ void processInformationWorker::loop()
             + ", " + QString::number(load[1]) + ", " + QString::number(load[2])
             + (overload<0? "":"\nOverloaded by " + QString::number(overload*100) + "% in the last minute!");
     emit(updateLoadAverage(avg));
+    if (settings->value("processes update interval",1.0).toDouble() < 0.25) {
+        settings->setValue("processes update interval",0.25);
+    }
     std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(
                                     settings->value("processes update interval",1.0).toDouble() * 1000));}
 

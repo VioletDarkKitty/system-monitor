@@ -39,7 +39,14 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QDoubleSpinBox" name="updateIntervalProcessesSpinner"/>
+            <widget class="QDoubleSpinBox" name="updateIntervalProcessesSpinner">
+             <property name="minimum">
+              <double>0.250000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.250000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -98,7 +105,7 @@
               <x>0</x>
               <y>0</y>
               <width>279</width>
-              <height>182</height>
+              <height>188</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -296,8 +303,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>117</width>
-              <height>182</height>
+              <width>279</width>
+              <height>188</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_6">

@@ -21,13 +21,14 @@
 #include "workerthread.h"
 #include <QTableWidget>
 #include "memoryconversion.h"
+#include <QSettings>
 using namespace memoryConversion;
 
 class fileSystemWorker : public QObject, public workerThread
 {
     Q_OBJECT
 public:
-    explicit fileSystemWorker(QObject *parent = 0);
+    explicit fileSystemWorker(QObject *parent, QSettings *settings);
 
 signals:
     void updateTableData();
@@ -54,6 +55,7 @@ private:
     std::vector<disk> oldDisks;
     std::vector<disk> readMtabDisks();
     void fillDiskStructures(std::vector<disk> &disks);
+    QSettings *settings;
 };
 
 #endif // FILESYSTEMWORKER_H

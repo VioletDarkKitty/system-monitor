@@ -24,7 +24,7 @@
 using namespace memoryConversion;
 using namespace cpuTools;
 
-resourcesWorker::resourcesWorker(QObject *parent)
+resourcesWorker::resourcesWorker(QObject *parent, QSettings *settings)
     : QObject(parent), workerThread()
 {
     memoryBar = parent->findChild<QProgressBar*>("memoryBar");
@@ -37,6 +37,8 @@ resourcesWorker::resourcesWorker(QObject *parent)
     connect(this,SIGNAL(updateSwapBar(int)),swapBar,SLOT(setValue(int)));
     connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));
     plottingData = nullptr;
+
+    this->settings = settings;
 }
 
 resourcesWorker::~resourcesWorker()
@@ -161,5 +163,6 @@ void resourcesWorker::loop()
     updateMemory();
     updateSwap();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(
+                                    settings->value("resources update interval",1.0).toDouble() * 1000));
 }

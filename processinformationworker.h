@@ -28,13 +28,14 @@
 #include <vector>
 #include <QLabel>
 #include <map>
+#include <QSettings>
 
 class processInformationWorker : public QObject, public workerThread
 {
     typedef std::map<int, proc_t> storedProcType;
     Q_OBJECT
 public:
-    explicit processInformationWorker(QObject *parent = 0);
+    explicit processInformationWorker(QObject *parent, QSettings *settings);
 
 private slots:
     void handleProcessStop();
@@ -61,6 +62,7 @@ private:
     int selectedRowInfoID;
     QLabel* loadAverage;
     std::map<QString, QIcon> processIconCache;
+    QSettings *settings;
 };
 
 #endif // PROCESSINFORMATIONWORKER_H

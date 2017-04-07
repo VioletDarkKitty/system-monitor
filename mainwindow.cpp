@@ -26,9 +26,11 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    processesThread = new processInformationWorker(this);
-    resourcesThread = new resourcesWorker(this);
-    filesystemThread = new fileSystemWorker(this);
+    settings = new QSettings("system-monitor","system-monitor");
+
+    processesThread = new processInformationWorker(this, settings);
+    resourcesThread = new resourcesWorker(this, settings);
+    filesystemThread = new fileSystemWorker(this, settings);
 
     processesThread->start();
     resourcesThread->start();
@@ -60,6 +62,7 @@ MainWindow::~MainWindow()
     delete resourcesThread;
     delete filesystemThread;
     delete mainTabs;
+    delete settings;
 }
 
 void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector *values)
@@ -138,6 +141,6 @@ void MainWindow::showAboutWindow()
  */
 void MainWindow::showPreferencesWindow()
 {
-    PreferencesDialogue* pref = new PreferencesDialogue(this);
+    PreferencesDialogue* pref = new PreferencesDialogue(this, settings);
     pref->exec();
 }

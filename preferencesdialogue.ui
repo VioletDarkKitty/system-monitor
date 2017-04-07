@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="processesTab">
       <attribute name="title">
@@ -39,7 +39,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+            <widget class="QDoubleSpinBox" name="updateIntervalProcessesSpinner"/>
            </item>
           </layout>
          </item>
@@ -57,7 +57,7 @@
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="QCheckBox" name="checkBox">
+          <widget class="QCheckBox" name="divideByCpuCheckbox">
            <property name="text">
             <string>Divide CPU usage by CPU count</string>
            </property>
@@ -98,7 +98,7 @@
               <x>0</x>
               <y>0</y>
               <width>279</width>
-              <height>188</height>
+              <height>182</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -296,8 +296,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>279</width>
-              <height>188</height>
+              <width>117</width>
+              <height>182</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_6">

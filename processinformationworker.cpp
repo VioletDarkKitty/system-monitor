@@ -30,7 +30,7 @@
 #include <QAction>
 using namespace processTools;
 
-processInformationWorker::processInformationWorker(QObject *parent) :
+processInformationWorker::processInformationWorker(QObject *parent, QSettings *settings) :
     QObject(parent), workerThread() {
     mainWindow = parent;
     QTabWidget* mainTabs = parent->findChild<QTabWidget*>("tabWidgetMain");
@@ -68,6 +68,8 @@ processInformationWorker::processInformationWorker(QObject *parent) :
 
     connect(this,SIGNAL(updateTableData()),SLOT(updateTable()));
     createProcessesView();
+
+    this->settings = settings;
 }
 
 /**
@@ -214,7 +216,7 @@ void processInformationWorker::updateTable() {
         QString user = p->euser;
         processesTable->setItem(index,1,new QTableWidgetItem(user));
         //std::cout << p->pcpu << std::endl;
-        QString cpu = QString::number(p->pcpu);
+        QString cpu = QString::number(settings->value("divide process cpu by cpu count",false).toBool()? p->pcpu/smp_num_cpus:p->pcpu);
         processesTable->setItem(index,2,new TableNumberItem(cpu));
         QString id = QString::number(p->tid);
         processesTable->setItem(index,3,new TableNumberItem(id));
@@ -266,6 +268,6 @@ void processInformationWorker::loop()
             + ", " + QString::number(load[1]) + ", " + QString::number(load[2])
             + (overload<0? "":"\nOverloaded by " + QString::number(overload*100) + "% in the last minute!");
     emit(updateLoadAverage(avg));
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-}
+    std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(
+                                    settings->value("processes update interval",1.0).toDouble() * 1000));}
 

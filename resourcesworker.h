@@ -26,6 +26,7 @@
 #include <QVector>
 #include "cputools.h"
 #include <deque>
+#include <QSettings>
 
 typedef QVector<QVector<double>> qcustomplotCpuVector;
 
@@ -33,7 +34,7 @@ class resourcesWorker : public QObject, public workerThread
 {
     Q_OBJECT
 public:
-    explicit resourcesWorker(QObject *parent = 0);
+    explicit resourcesWorker(QObject *parent, QSettings *settings);
     ~resourcesWorker();
 signals:
     void updateMemoryBar(int value);
@@ -51,6 +52,7 @@ private:
     std::vector<cpuTools::cpuStruct> prevCpuTimes;
     std::deque<std::vector<double>> cpuPlotData;
     QVector<QVector<double>> *plottingData;
+    QSettings *settings;
 };
 
 #endif // RESOURCESWORKER_H

@@ -17,15 +17,36 @@
  */
 #include "preferencesdialogue.h"
 #include "ui_preferencesdialogue.h"
+#include <QCheckBox>
 
-PreferencesDialogue::PreferencesDialogue(QWidget *parent) :
+PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
     QDialog(parent),
     ui(new Ui::PreferencesDialogue)
 {
     ui->setupUi(this);
+    this->settings = settings;
+
+    QCheckBox *divideByCpuCheckbox = this->findChild<QCheckBox*>("divideByCpuCheckbox");
+    connect(divideByCpuCheckbox,SIGNAL(clicked(bool)),this,SLOT(toggleDivideCpuCheckbox(bool)));
+    divideByCpuCheckbox->setChecked(settings->value("divide process cpu by cpu count", false).toBool());
+
+    QDoubleSpinBox *updateIntervalProcessesSpinner = this->findChild<QDoubleSpinBox*>("updateIntervalProcessesSpinner");
+    connect(updateIntervalProcessesSpinner,SIGNAL(valueChanged(double)),this,SLOT(updateProcessesIntervalSpinner(double)));
+    updateIntervalProcessesSpinner->setValue(settings->value("processes update interval", 1.0).toDouble());
 }
 
 PreferencesDialogue::~PreferencesDialogue()
 {
     delete ui;
+}
+
+void PreferencesDialogue::toggleDivideCpuCheckbox(bool checked)
+{
+
+    settings->setValue("divide process cpu by cpu count",checked);
+}
+
+void PreferencesDialogue::updateProcessesIntervalSpinner(double value)
+{
+    settings->setValue("processes update interval", value);
 }

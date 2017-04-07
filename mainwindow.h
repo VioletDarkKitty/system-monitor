@@ -24,6 +24,7 @@
 #include "filesystemworker.h"
 #include <QAction>
 #include "qcustomplot.h"
+#include <QSettings>
 
 namespace Ui {
 class MainWindow;
@@ -53,6 +54,7 @@ private:
     QTabWidget* mainTabs;
     QAction *quitAction, *aboutAction, *preferencesAction;
     QCustomPlot *cpuPlot;
+    QSettings *settings;
 };
 
 #endif // MAINWINDOW_H

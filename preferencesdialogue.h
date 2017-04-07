@@ -19,6 +19,9 @@
 #define PREFERENCESDIALOG_H
 
 #include <QDialog>
+#include <QSettings>
+#include <QCheckBox>
+#include <QString>
 
 namespace Ui {
 class PreferencesDialogue;
@@ -29,11 +32,16 @@ class PreferencesDialogue : public QDialog
     Q_OBJECT
 
 public:
-    explicit PreferencesDialogue(QWidget *parent = 0);
+    explicit PreferencesDialogue(QWidget *parent, QSettings *settings);
     ~PreferencesDialogue();
+
+public slots:
+    void toggleDivideCpuCheckbox(bool checked);
+    void updateProcessesIntervalSpinner(double value);
 
 private:
     Ui::PreferencesDialogue *ui;
+    QSettings *settings;
 };
 
 #endif // PREFERENCESDIALOG_H

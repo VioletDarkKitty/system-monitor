@@ -28,7 +28,7 @@
 #include <unistd.h>
 #include <QFileInfo>
 
-fileSystemWorker::fileSystemWorker(QObject *parent)
+fileSystemWorker::fileSystemWorker(QObject *parent, QSettings *settings)
     : QObject(parent), workerThread()
 {
     QTabWidget* mainTabs = parent->findChild<QTabWidget*>("tabWidgetMain");
@@ -38,6 +38,8 @@ fileSystemWorker::fileSystemWorker(QObject *parent)
 
     createFilesystemView();
     timeSinceLastIOCheck = 0;
+
+    this->settings = settings;
 }
 
 /**

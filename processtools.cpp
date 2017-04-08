@@ -26,6 +26,8 @@
 #include <QIcon>
 #include <QMap>
 #include <unordered_set>
+#include <unordered_map>
+#include "hashqstring.h"
 
 namespace processTools {
     // from http://stackoverflow.com/questions/24581908/c-lstat-on-proc-pid-exe
@@ -142,8 +144,8 @@ namespace processTools {
         QString name = QFileInfo(QString::fromStdString(args[0])).fileName();
         // replace the name of some processes with their first argument, eg, python, php, ruby etc
         // QString does not support hash
-        static std::unordered_set<std::string> nameMap({"python", "python3", "ruby", "php", "perl"});
-        auto pos = nameMap.find(name.toStdString());
+        static std::unordered_set<QString> nameMap({"python", "python3", "ruby", "php", "perl"});
+        auto pos = nameMap.find(name);
         if (pos != nameMap.end()) {
             return QFileInfo(QString::fromStdString(args[1])).fileName();
         } else {
@@ -297,7 +299,7 @@ namespace processTools {
      * @param procname The name of the process
      * @return The process' icon or the default executable icon if none was found
      */
-    QIcon getProcessIconFromName(QString procName, std::map<QString, QIcon> &processIconMapCache)
+    QIcon getProcessIconFromName(QString procName, std::unordered_map<QString, QIcon> &processIconMapCache)
     {
         // check we havent already got the icon in the cache
         auto pos = processIconMapCache.find(procName);

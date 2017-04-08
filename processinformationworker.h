@@ -27,8 +27,9 @@
 #include <string>
 #include <vector>
 #include <QLabel>
-#include <map>
+#include <unordered_map>
 #include <QSettings>
+#include "hashqstring.h"
 
 class processInformationWorker : public QObject, public workerThread
 {
@@ -61,7 +62,7 @@ private:
     unsigned long long totalCpuTime;
     int selectedRowInfoID;
     QLabel* loadAverage;
-    std::map<QString, QIcon> processIconCache;
+    std::unordered_map<QString, QIcon> processIconCache;
     QSettings *settings;
 };
 

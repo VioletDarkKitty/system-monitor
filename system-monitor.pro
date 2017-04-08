@@ -59,7 +59,8 @@ HEADERS  += mainwindow.h \
     aboutdialogue.h \
     qcustomplot.h \
     cputools.h \
-    preferencesdialogue.h
+    preferencesdialogue.h \
+    hashqstring.h
 
 FORMS    += mainwindow.ui \
     processpropertiesdialogue.ui \

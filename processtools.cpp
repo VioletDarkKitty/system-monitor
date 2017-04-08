@@ -25,6 +25,7 @@
 #include <qdiriterator.h>
 #include <QIcon>
 #include <QMap>
+#include <unordered_set>
 
 namespace processTools {
     // from http://stackoverflow.com/questions/24581908/c-lstat-on-proc-pid-exe
@@ -136,8 +137,18 @@ namespace processTools {
 
         // maintain linux paths
         std::replace(cmdline.begin(),cmdline.end(),'\\','/');
-        /// TODO: Sometimes this does not show the correct name
-        return QFileInfo(QString::fromStdString(explode(cmdline,' ')[0])).fileName();
+
+        auto args = explode(cmdline,' ');
+        QString name = QFileInfo(QString::fromStdString(args[0])).fileName();
+        // replace the name of some processes with their first argument, eg, python, php, ruby etc
+        // QString does not support hash
+        static std::unordered_set<std::string> nameMap({"python", "python3", "ruby", "php", "perl"});
+        auto pos = nameMap.find(name.toStdString());
+        if (pos != nameMap.end()) {
+            return QFileInfo(QString::fromStdString(args[1])).fileName();
+        } else {
+            return name;
+        }
     }
 
     /**

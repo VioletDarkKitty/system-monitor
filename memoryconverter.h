@@ -13,13 +13,15 @@ class memoryConverter
 public:
     memoryConverter(double value, memoryUnit unit, unitStandard standard);
     memoryConverter(double value, memoryUnit unit, std::string standard);
-    /*memoryConverter() {
+    memoryConverter() {
         memoryValue = 0;
         unit = b;
         standard = JEDEC;
-    }*/
+    }
+    memoryConverter(const memoryConverter &other);
+    memoryConverter& operator=(const memoryConverter& other);
     bool operator <(const memoryConverter &other) const;
-    void operator=(const memoryConverter &other);
+    //memoryConverter & operator=(const memoryConverter &other);
     operator std::string();
     void convertTo(memoryUnit newUnit);
     static unitStandard stringToStandard(std::string standard) {

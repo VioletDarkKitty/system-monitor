@@ -24,9 +24,9 @@ class TableMemoryItem : public QTableWidgetItem
 {
 public:
     TableMemoryItem(memoryConverter memory)
-        :QTableWidgetItem(calculateTxt(memory))
+        :QTableWidgetItem(calculateTxt(&memory))
     {
-        this->memory = &memory;
+        this->memory = memory;
     }
 
     bool operator <(const QTableWidgetItem &other) const
@@ -38,11 +38,11 @@ public:
         return memory < otherMemoryItem.memory;
     }
 protected:
-    memoryConverter *memory;
+    memoryConverter memory;
 private:
-    static QString calculateTxt(memoryConverter& memory) {
-        if (memory.getValue() > 0.0) {
-            return QString::fromStdString(to_string(memory));
+    static QString calculateTxt(memoryConverter *memory) {
+        if (memory->getValue() > 0.0) {
+            return QString::fromStdString(to_string(*memory));
         }
         return "N/A";
     }

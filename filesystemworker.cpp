@@ -178,6 +178,14 @@ void fileSystemWorker::updateTable()
     // http://stackoverflow.com/questions/4965355/converting-statvfs-to-percentage-free-correctly
     fillDiskStructures(disks);
 
+    // delete the objects we created with new before we assign to prevent leaks
+    while(!oldDisks.empty()) {
+        disk *workingDisk = &(oldDisks.back());
+        delete workingDisk->freeSize;
+        delete workingDisk->totalSize;
+        delete workingDisk->usedSize;
+        oldDisks.pop_back();
+    }
     oldDisks = disks;
 
     diskTable->setUpdatesEnabled(false); // avoid inconsistant data
@@ -208,6 +216,7 @@ void fileSystemWorker::updateTable()
  */
 void fileSystemWorker::loop()
 {
+    standard = memoryConverter::stringToStandard(settings->value("unit prefix standards", JEDEC).toString().toStdString());
     emit(updateTableData());
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }

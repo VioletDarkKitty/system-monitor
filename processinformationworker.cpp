@@ -223,7 +223,8 @@ void processInformationWorker::updateTable() {
         // gnome-system-monitor measures memory as RSS - shared
         // shared memory is only given as # pages, sysconf(_SC_PAGES) is in bytes
         // so do, (#pages RSS - #pages Share) * _SC_PAGES
-        memoryConverter memory = memoryConverter((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b,settings->value("unit prefix standards",JEDEC).toString().toStdString());
+        memoryConverter memory = memoryConverter((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b,
+                                    settings->value("unit prefix standards",JEDEC).toString().toStdString());
         processesTable->setItem(index,4,new TableMemoryItem(memory));
         processesTable->showRow(index);
 
@@ -272,5 +273,6 @@ void processInformationWorker::loop()
         settings->setValue("processes update interval",0.25);
     }
     std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(
-                                    settings->value("processes update interval",1.0).toDouble() * 1000));}
+                                    settings->value("processes update interval",1.0).toDouble() * 1000));
+}
 

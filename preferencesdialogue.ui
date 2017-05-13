@@ -10,8 +10,11 @@
     <height>320</height>
    </rect>
   </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::NoContextMenu</enum>
+  </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>System monitor preferences</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -104,8 +107,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>320</width>
-              <height>188</height>
+              <width>117</width>
+              <height>182</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -303,8 +306,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>320</width>
-              <height>188</height>
+              <width>117</width>
+              <height>182</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_6">

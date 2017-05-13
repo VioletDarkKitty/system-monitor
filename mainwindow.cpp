@@ -67,6 +67,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector *values)
 {
+    //return;
     QVector<double> x(60); // initialize with entries 60..0
     for (int i=59; i>0; --i)
     {
@@ -74,7 +75,7 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector *values)
     }
 
     static bool previouslyPlotted = false;
-    int size = values->size();
+    int size = values->count();//values->size();
     if (size == 0) {
         return;
     }

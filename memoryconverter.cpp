@@ -1,5 +1,6 @@
 #include "memoryconverter.h"
 #include <cmath>
+#include <assert.h>
 
 memoryConverter::memoryConverter(double value, memoryUnit unit,
                                  unitStandard standard)
@@ -15,11 +16,19 @@ memoryConverter::memoryConverter(double value, memoryUnit unit, std::string stan
     memoryConverter(value, unit, memoryConverter::stringToStandard(standard));
 }
 
-void memoryConverter::operator=(const memoryConverter &other)
+memoryConverter::memoryConverter(const memoryConverter &other)
 {
-    this->unit = other.getUnit();
     this->memoryValue = other.getValue();
+    this->unit = other.getUnit();
     this->standard = other.getStandard();
+}
+
+memoryConverter& memoryConverter::operator=(const memoryConverter& other)
+{
+    this->memoryValue = other.getValue();
+    this->unit = other.getUnit();
+    this->standard = other.getStandard();
+    return *this;
 }
 
 bool memoryConverter::operator<(const memoryConverter &other) const
@@ -76,24 +85,27 @@ std::string memoryConverter::getStandardUnit(unitStandard standard, memoryUnit u
         "B", "kB", "MB", "GB", "TB"
     };
 
-    std::string *unitPointer = nullptr;
+    // converting this enum into an int causes sigsegv so use the lookup map instead
+    int pos = 0;
+    for(; pos<memoryLookupLength; pos++) {
+        if (memoryLookup[pos].unit == unit) {
+            break;
+        }
+    }
+
     switch(standard) {
     case IEC:
-        unitPointer = IEC_units;
+        return IEC_units[pos];
         break;
     case JEDEC:
-        unitPointer = JEDEC_units;
+        return JEDEC_units[pos];
         break;
     case SI:
-        unitPointer = SI_units;
+        return SI_units[pos];
         break;
-    }
-
-    if (unitPointer == nullptr) {
+    default:
         return "Error";
     }
-
-    return unitPointer[(int)unit];
 }
 
 /**

@@ -37,21 +37,20 @@ SOURCES += main.cpp\
     processinformationworker.cpp \
     workerthread.cpp \
     resourcesworker.cpp \
-    memoryconversion.cpp \
     filesystemworker.cpp \
     processpropertiesdialogue.cpp \
     processtools.cpp \
     aboutdialogue.cpp \
     qcustomplot.cpp \
     cputools.cpp \
-    preferencesdialogue.cpp
+    preferencesdialogue.cpp \
+    memoryconverter.cpp
 
 HEADERS  += mainwindow.h \
     processinformationworker.h \
     tablenumberitem.h \
     workerthread.h \
     resourcesworker.h \
-    memoryconversion.h \
     tablememoryitem.h \
     filesystemworker.h \
     processpropertiesdialogue.h \
@@ -60,7 +59,8 @@ HEADERS  += mainwindow.h \
     qcustomplot.h \
     cputools.h \
     preferencesdialogue.h \
-    hashqstring.h
+    hashqstring.h \
+    memoryconverter.h
 
 FORMS    += mainwindow.ui \
     processpropertiesdialogue.ui \

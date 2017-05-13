@@ -22,6 +22,7 @@
 #include <QSettings>
 #include <QCheckBox>
 #include <QString>
+#include <QRadioButton>
 
 namespace Ui {
 class PreferencesDialogue;
@@ -38,10 +39,13 @@ public:
 public slots:
     void toggleDivideCpuCheckbox(bool checked);
     void updateProcessesIntervalSpinner(double value);
+    void updateStandardsRadioButton();
 
 private:
     Ui::PreferencesDialogue *ui;
     QSettings *settings;
+    QRadioButton *IECStandard, *JEDECStandard, *SIStandard;
+    void checkStandardsRadioButtonBasedOnSettingValue();
 };
 
 #endif // PREFERENCESDIALOG_H

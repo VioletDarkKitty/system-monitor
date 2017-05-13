@@ -18,11 +18,13 @@
 #include "processpropertiesdialogue.h"
 #include "ui_processpropertiesdialogue.h"
 
-processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid) :
+processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid, QSettings *settings) :
     QDialog(parent),
     ui(new Ui::processPropertiesDialogue)
 {
     ui->setupUi(this);
+
+    this->settings = settings;
 
     processID = pid;
     before = NULL;
@@ -45,6 +47,28 @@ processPropertiesDialogue::processPropertiesDialogue(QWidget *parent, pid_t pid)
 
     // hide minimise and maximise buttons
     setWindowFlags(Qt::Tool | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint);
+
+    const unitStandard standard = memoryConverter::stringToStandard(settings->value("unit prefix standards",JEDEC).toString().toStdString());
+    #define varg(x,y) std::make_pair(x,[this, standard](proc_t* p)->QTableWidgetItem*{MARKUSED(p); y;}) // macro used to reduce the amount of typing in the vector initialisation
+    // add the actions to the vector
+    std::vector<std::pair<QString,std::function<QTableWidgetItem*(proc_t*)>>> propertiesTableData = {
+        varg("Process Name",return new QTableWidgetItem(getProcessName(p));),
+        varg("User",return new QTableWidgetItem(QString(p->euser) + " (" + QString::number(p->euid) + ")");),
+        varg("Status",return new QTableWidgetItem(getProcessStatus(p));),
+        varg("Memory",return new TableMemoryItem(memoryConverter((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b,standard))),
+        varg("Virtual Memory",return new TableMemoryItem(memoryConverter(p->vm_size,memoryUnit::kb,standard))),
+        varg("Resident Memory",return new TableMemoryItem(memoryConverter(p->vm_rss,memoryUnit::kb,standard))),
+        varg("Shared Memory",return new TableMemoryItem(memoryConverter(p->share*sysconf(_SC_PAGESIZE),memoryUnit::b,standard))),
+        varg("CPU",return new TableNumberItem(processPropertiesDialogue::getCpuPercentage(p));),
+        varg("CPU Time",{unsigned long long s = (p->stime + p->cstime + p->utime + p->cutime)/(float)sysconf(_SC_CLK_TCK);
+                         unsigned long long m = s/60; s = s%60;
+                        return new TableNumberItem((QString::number(m)+":"+QString::number(s)));}),
+        varg("Started",return new QTableWidgetItem(getProcessStartDate(p->start_time));),
+        varg("Nice",return new TableNumberItem(QString::number(p->nice));),
+        varg("Priority",return new TableNumberItem(QString::number(p->priority));),
+        varg("PID",return new TableNumberItem(QString::number(p->tgid));),
+        varg("Command Line",return new QTableWidgetItem(getProcessCmdline(p->tgid));)
+    };
 
     this->start();
 }

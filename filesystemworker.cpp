@@ -27,6 +27,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <QFileInfo>
+#include <cmath>
 
 fileSystemWorker::fileSystemWorker(QObject *parent, QSettings *settings)
     : QObject(parent), workerThread()
@@ -104,11 +105,11 @@ void fileSystemWorker::fillDiskStructures(std::vector<disk> &disks)
             // f_bavail is the number of free blocks to normal users
             // f_bfree should be used to find the used% however
             // GSM reports these numbers in kb=1000 mode
-            /// TODO: add an option to swap this mode
-            disks[i].totalSize = convertMemoryUnit((double)device.f_blocks*device.f_frsize,memoryUnit::b);
-            disks[i].freeSize = convertMemoryUnit((double)device.f_bavail*device.f_frsize,memoryUnit::b);
-            disks[i].usedSize = convertMemoryUnit((double)(device.f_blocks - device.f_bfree) * device.f_frsize,memoryUnit::b);
-            disks[i].usedPercentage = disks[i].usedSize.id / disks[i].totalSize.id * 100;
+
+            disks[i].totalSize = new memoryConverter((double)device.f_blocks*device.f_frsize,memoryUnit::b,standard);
+            disks[i].freeSize = new memoryConverter((double)device.f_bavail*device.f_frsize,memoryUnit::b,standard);
+            disks[i].usedSize = new memoryConverter((double)(device.f_blocks - device.f_bfree) * device.f_frsize,memoryUnit::b,standard);
+            disks[i].usedPercentage = disks[i].usedSize->getValue() / disks[i].totalSize->getValue() * 100;
         } else {
             throw std::runtime_error(qPrintable("'" + disks[i].mountPoint + "'' failed statvfs!"));
         }
@@ -189,12 +190,10 @@ void fileSystemWorker::updateTable()
             diskTable->setItem(index,0,new QTableWidgetItem(p->name));
             diskTable->setItem(index,1,new QTableWidgetItem(p->mountPoint));
             diskTable->setItem(index,2,new QTableWidgetItem(p->type));
-            diskTable->setItem(index,3,new QTableWidgetItem(QString::fromStdString(dbl2str(truncateDouble(p->totalSize.id,1)))
-                                                            + QString::fromStdString(unitToString(p->totalSize.unit))));
-            diskTable->setItem(index,4,new QTableWidgetItem(QString::fromStdString(dbl2str(truncateDouble(p->freeSize.id,1)))
-                                                            + QString::fromStdString(unitToString(p->freeSize.unit))));
+            diskTable->setItem(index,3,new QTableWidgetItem(QString::fromStdString(to_string(*(p->totalSize)))));
+            diskTable->setItem(index,4,new QTableWidgetItem(QString::fromStdString(to_string(*(p->freeSize)))));
             diskTable->setItem(index,5,new QTableWidgetItem(QString::number(p->usedPercentage) + QString::fromStdString("% (" +
-                                                            dbl2str(truncateDouble(p->usedSize.id,1)) + unitToString(p->usedSize.unit)) + ")"));
+                                                            to_string(*(p->usedSize)) + ")")));
             diskTable->setItem(index,6,new QTableWidgetItem(QString::number(p->io) + "%"));
             diskTable->showRow(index);
         }

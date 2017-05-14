@@ -48,9 +48,10 @@ MainWindow::MainWindow(QWidget *parent) :
     mainTabs = findChild<QTabWidget*>("tabWidgetMain");
     connect(mainTabs, SIGNAL(currentChanged(int)), this, SLOT(handleTabChange()));
 
+    qRegisterMetaType<qcustomplotCpuVector>("qcustomplotCpuVector");
     cpuPlot = reinterpret_cast<QCustomPlot*>(ui->tabResources->findChild<QWidget*>("cpuPlot"));
-    connect(resourcesThread,SIGNAL(updateCpuPlotSIG(const qcustomplotCpuVector*)),
-            this,SLOT(updateCpuPlotSLO(const qcustomplotCpuVector*)));
+    connect(resourcesThread,SIGNAL(updateCpuPlotSIG(const qcustomplotCpuVector&)),
+            this,SLOT(updateCpuPlotSLO(const qcustomplotCpuVector&)));
 
     handleTabChange();
 }
@@ -65,7 +66,7 @@ MainWindow::~MainWindow()
     delete settings;
 }
 
-void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector *values)
+void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &values)
 {
     QVector<double> x(60); // initialize with entries 60..0
     for (int i=59; i>0; --i)
@@ -74,7 +75,7 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector *values)
     }
 
     static bool previouslyPlotted = false;
-    int size = values->count();//values->size();
+    int size = values.count();//values->size();
     if (size == 0) {
         return;
     }
@@ -90,7 +91,7 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector *values)
             cpuPlot->graph(i)->data()->clear();
             cpuPlot->graph(i)->setPen(QPen(QColor(colourNames[i % colourNamesLen])));
         }
-        cpuPlot->graph(i)->setData(x, values->at(i));
+        cpuPlot->graph(i)->setData(x, values.at(i));
     }
     previouslyPlotted = true;
 

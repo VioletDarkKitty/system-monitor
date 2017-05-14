@@ -40,7 +40,7 @@ public:
     ~MainWindow();
 
 public slots:
-    void updateCpuPlotSLO(const qcustomplotCpuVector *values);
+    void updateCpuPlotSLO(const qcustomplotCpuVector &values);
 
 private slots:
     void handleTabChange();

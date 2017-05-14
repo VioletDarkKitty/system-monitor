@@ -113,7 +113,7 @@ void resourcesWorker::updateMemory()
 
     std::string memPercent = memoryConverter::dbl2str(memoryConverter::truncateDouble(memoryConverter::roundDouble(memory, 1),1));
 
-    std::string memoryText = to_string(mainUsed) + " (" + memPercent + "%) of " + to_string(mainTotal);
+    std::string memoryText = mainUsed.to_string() + " (" + memPercent + "%) of " + mainTotal.to_string();
     emit(updateMemoryText(QString::fromStdString(memoryText)));
 }
 
@@ -134,7 +134,7 @@ void resourcesWorker::updateSwap()
         // cleanup the swap values
         std::string swapPercent = memoryConverter::dbl2str(memoryConverter::truncateDouble(memoryConverter::roundDouble(swap, 1),1));
 
-        std::string swapText = to_string(swapUsed) + " (" + swapPercent + "%) of " + to_string(swapTotal);
+        std::string swapText = swapUsed.to_string() + " (" + swapPercent + "%) of " + swapTotal.to_string();
         emit(updateSwapText(QString::fromStdString(swapText)));
     } else {
         // there is no swap

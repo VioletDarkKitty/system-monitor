@@ -67,7 +67,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector *values)
 {
-    //return;
     QVector<double> x(60); // initialize with entries 60..0
     for (int i=59; i>0; --i)
     {

@@ -62,11 +62,10 @@ private:
         processNice, processPriority, processPID, processCmdLine, processLastItem
     } processPropertiesTableValue;
     QString getCpuPercentage(proc_t* p);
-    // store the information about constructing the table as a vector of pairs of labels and functions which fill in that label's data
-    #define MARKUSED(X)  ((void)(&(X))) // stop g++ complaining
     std::vector<std::pair<QString,std::function<QTableWidgetItem*(proc_t*)>>> propertiesTableData;
     proc_t* before;
     double cpuTime;
+    unitStandard standard;
 };
 
 #endif // PROCESSPROPERTIESDIALOGUE_H

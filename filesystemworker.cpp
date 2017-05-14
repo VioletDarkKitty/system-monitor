@@ -198,10 +198,10 @@ void fileSystemWorker::updateTable()
             diskTable->setItem(index,0,new QTableWidgetItem(p->name));
             diskTable->setItem(index,1,new QTableWidgetItem(p->mountPoint));
             diskTable->setItem(index,2,new QTableWidgetItem(p->type));
-            diskTable->setItem(index,3,new QTableWidgetItem(QString::fromStdString(to_string(*(p->totalSize)))));
-            diskTable->setItem(index,4,new QTableWidgetItem(QString::fromStdString(to_string(*(p->freeSize)))));
+            diskTable->setItem(index,3,new QTableWidgetItem(QString::fromStdString(p->totalSize->to_string())));
+            diskTable->setItem(index,4,new QTableWidgetItem(QString::fromStdString(p->freeSize->to_string())));
             diskTable->setItem(index,5,new QTableWidgetItem(QString::number(p->usedPercentage) + QString::fromStdString("% (" +
-                                                            to_string(*(p->usedSize)) + ")")));
+                                                            p->usedSize->to_string() + ")")));
             diskTable->setItem(index,6,new QTableWidgetItem(QString::number(p->io) + "%"));
             diskTable->showRow(index);
         }

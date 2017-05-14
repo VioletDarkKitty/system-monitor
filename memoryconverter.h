@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017 Lily Rivers (VioletDarkKitty)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; version 2
+ * of the License only.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 #ifndef MEMORYUNIT_H
 #define MEMORYUNIT_H
 
@@ -21,9 +38,8 @@ public:
     memoryConverter(const memoryConverter &other);
     memoryConverter& operator=(const memoryConverter& other);
     bool operator <(const memoryConverter &other) const;
-    //memoryConverter & operator=(const memoryConverter &other);
     operator std::string();
-    void convertTo(memoryUnit newUnit);
+    //void convertTo(memoryUnit newUnit);
     static unitStandard stringToStandard(std::string standard) {
         if (standard == "IEC") {
             return IEC;
@@ -40,6 +56,7 @@ public:
     double getValue() const;
     memoryUnit getUnit() const;
     unitStandard getStandard() const;
+    std::string to_string();
 
 private:
     double memoryValue;
@@ -63,32 +80,5 @@ private:
     memoryUnit nextMemoryUnit(memoryUnit unit);
     memoryUnit prevMemoryUnit(memoryUnit unit);
 };
-
-/*std::string& operator+(std::string& s, const memoryConverter &m)
-{
-    //std::string cast = m;
-    //s += cast;
-    return s;
-}
-
-std::string operator+(memoryConverter &m, const std::string &s)
-{
-    std::string cast = m;
-    cast += s;
-    return cast;
-}
-
-std::string operator+(memoryConverter &m, const char *s)
-{
-    std::string buffer = std::string(s);
-    std::string cast = m;
-    return cast + buffer;
-}*/
-
-inline std::string to_string(memoryConverter m)
-{
-    std::string temp = m;
-    return temp;
-}
 
 #endif // MEMORYUNIT_H

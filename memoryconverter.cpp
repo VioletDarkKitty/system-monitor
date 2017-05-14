@@ -1,7 +1,30 @@
+/*
+ * Copyright (C) 2017 Lily Rivers (VioletDarkKitty)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; version 2
+ * of the License only.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 #include "memoryconverter.h"
 #include <cmath>
 #include <assert.h>
 
+/**
+ * @brief memoryConverter::memoryConverter Constructor taking standard enum value
+ * @param value The value of the memory to represent
+ * @param unit The unit the value is in
+ * @param standard The standard to show the units for
+ */
 memoryConverter::memoryConverter(double value, memoryUnit unit,
                                  unitStandard standard)
 {
@@ -11,11 +34,22 @@ memoryConverter::memoryConverter(double value, memoryUnit unit,
     this->standard = standard;
 }
 
-memoryConverter::memoryConverter(double value, memoryUnit unit, std::string standard)
+/**
+ * @brief memoryConverter::memoryConverter Constructor taking string standard name
+ * @param value The value of the memory to represent
+ * @param unit The unit the memory is in
+ * @param standard The standard to show the unit for
+ */
+memoryConverter::memoryConverter(double value, memoryUnit unit, std::string standard) :
+    memoryConverter(value, unit, memoryConverter::stringToStandard(standard))
 {
-    memoryConverter(value, unit, memoryConverter::stringToStandard(standard));
+    ;
 }
 
+/**
+ * @brief memoryConverter::memoryConverter Copy ctor
+ * @param other The other converter
+ */
 memoryConverter::memoryConverter(const memoryConverter &other)
 {
     this->memoryValue = other.getValue();
@@ -23,6 +57,11 @@ memoryConverter::memoryConverter(const memoryConverter &other)
     this->standard = other.getStandard();
 }
 
+/**
+ * @brief memoryConverter::operator= Assignment operator
+ * @param other The other converter
+ * @return this
+ */
 memoryConverter& memoryConverter::operator=(const memoryConverter& other)
 {
     this->memoryValue = other.getValue();
@@ -31,6 +70,11 @@ memoryConverter& memoryConverter::operator=(const memoryConverter& other)
     return *this;
 }
 
+/**
+ * @brief memoryConverter::operator< Comparison operator
+ * @param other The other converter
+ * @return if this < other
+ */
 bool memoryConverter::operator<(const memoryConverter &other) const
 {
     memoryUnit otherUnit = other.unit;
@@ -43,26 +87,42 @@ bool memoryConverter::operator<(const memoryConverter &other) const
     return memoryValue < otherValue;
 }
 
+/**
+ * @brief memoryConverter::getValue Get the value of the converter
+ * @return The memory value
+ */
 double memoryConverter::getValue() const
 {
     return memoryValue;
 }
 
+/**
+ * @brief memoryConverter::getUnit Get the units
+ * @return The unit the memory has
+ */
 memoryUnit memoryConverter::getUnit() const
 {
     return unit;
 }
 
+/**
+ * @brief memoryConverter::getStandard Get the standard the unit uses
+ * @return The standard used
+ */
 unitStandard memoryConverter::getStandard() const
 {
     return standard;
 }
 
+/**
+ * @brief memoryConverter::getStandardKbSize Get the number of bytes in a kb based on the standard
+ * @param standard The standard used
+ * @return The number of bytes in a kb
+ */
 int memoryConverter::getStandardKbSize(unitStandard standard)
 {
     switch(standard) {
     case IEC:
-        return 1024;
     case JEDEC:
         return 1024;
     case SI:
@@ -71,6 +131,12 @@ int memoryConverter::getStandardKbSize(unitStandard standard)
     return 1;
 }
 
+/**
+ * @brief memoryConverter::getStandardUnit Get the string representation of a unit based on the standard
+ * @param standard The standard to use
+ * @param unit The unit to represent
+ * @return The string of the representation
+ */
 std::string memoryConverter::getStandardUnit(unitStandard standard, memoryUnit unit)
 {
     static std::string IEC_units[] = {
@@ -172,19 +238,32 @@ memoryUnit memoryConverter::prevMemoryUnit(memoryUnit unit)
     return unit;
 }
 
+/*
 void memoryConverter::convertTo(memoryUnit newUnit)
 {
     memoryEntry converted = fitMemoryValueToUnit(memoryValue, newUnit, getStandardKbSize(standard));
     this->memoryValue = converted.id;
     this->unit = converted.unit;
-}
+}*/
 
-memoryConverter::operator std::string()
+/**
+ * @brief memoryConverter::to_string Convert to a string in the format [value] [unit] where value is rounded down to 1 dp
+ * @return The string representation of the memory
+ */
+std::string memoryConverter::to_string()
 {
     std::string buffer;
-    buffer += dbl2str(truncateDouble(this->memoryValue, 2));
+    buffer += dbl2str(roundDouble(this->memoryValue, 1));
     buffer += " " + getStandardUnit(this->standard, this->unit);
     return buffer;
+}
+
+/**
+ * @brief memoryConverter::operator std::string @see to_string
+ */
+memoryConverter::operator std::string()
+{
+    return to_string();
 }
 
 /**

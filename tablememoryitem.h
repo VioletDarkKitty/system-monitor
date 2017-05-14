@@ -42,7 +42,7 @@ protected:
 private:
     static QString calculateTxt(memoryConverter *memory) {
         if (memory->getValue() > 0.0) {
-            return QString::fromStdString(to_string(*memory));
+            return QString::fromStdString(memory->to_string());
         }
         return "N/A";
     }

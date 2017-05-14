@@ -23,11 +23,11 @@
 #include <QMessageBox>
 #include <QHeaderView>
 #include "tablememoryitem.h"
-#include "memoryconversion.h"
 #include "processpropertiesdialogue.h"
 #include "processtools.h"
 #include <proc/sysinfo.h>
 #include <QAction>
+#include "memoryconverter.h"
 using namespace processTools;
 
 processInformationWorker::processInformationWorker(QObject *parent, QSettings *settings) :
@@ -78,7 +78,7 @@ processInformationWorker::processInformationWorker(QObject *parent, QSettings *s
  */
 void processInformationWorker::showProcessProperties()
 {
-    processPropertiesDialogue* properties = new processPropertiesDialogue((QWidget*)mainWindow, selectedRowInfoID);
+    processPropertiesDialogue* properties = new processPropertiesDialogue((QWidget*)mainWindow, selectedRowInfoID, settings);
     properties->show();
     properties->exec();
 }
@@ -223,8 +223,9 @@ void processInformationWorker::updateTable() {
         // gnome-system-monitor measures memory as RSS - shared
         // shared memory is only given as # pages, sysconf(_SC_PAGES) is in bytes
         // so do, (#pages RSS - #pages Share) * _SC_PAGES
-        memoryEntry memory = convertMemoryUnit((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b);
-        processesTable->setItem(index,4,new TableMemoryItem(memory.unit,truncateDouble(memory.id,1)));
+        memoryConverter memory = memoryConverter((p->resident - p->share)*sysconf(_SC_PAGESIZE),memoryUnit::b,
+                                    settings->value("unit prefix standards",JEDEC).toString().toStdString());
+        processesTable->setItem(index,4,new TableMemoryItem(memory));
         processesTable->showRow(index);
 
         if (shouldHideProcess(p->euid)) {
@@ -272,5 +273,6 @@ void processInformationWorker::loop()
         settings->setValue("processes update interval",0.25);
     }
     std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(
-                                    settings->value("processes update interval",1.0).toDouble() * 1000));}
+                                    settings->value("processes update interval",1.0).toDouble() * 1000));
+}
 

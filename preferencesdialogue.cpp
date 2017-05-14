@@ -33,6 +33,14 @@ PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
     QDoubleSpinBox *updateIntervalProcessesSpinner = this->findChild<QDoubleSpinBox*>("updateIntervalProcessesSpinner");
     connect(updateIntervalProcessesSpinner,SIGNAL(valueChanged(double)),this,SLOT(updateProcessesIntervalSpinner(double)));
     updateIntervalProcessesSpinner->setValue(settings->value("processes update interval", 1.0).toDouble());
+
+    IECStandard = this->findChild<QRadioButton*>("IECButton");
+    connect(IECStandard,SIGNAL(toggled(bool)),this,SLOT(updateStandardsRadioButton()));
+    JEDECStandard = this->findChild<QRadioButton*>("JEDECButton");
+    connect(JEDECStandard,SIGNAL(toggled(bool)),this,SLOT(updateStandardsRadioButton()));
+    SIStandard = this->findChild<QRadioButton*>("SIButton");
+    connect(SIStandard,SIGNAL(toggled(bool)),this,SLOT(updateStandardsRadioButton()));
+    checkStandardsRadioButtonBasedOnSettingValue();
 }
 
 PreferencesDialogue::~PreferencesDialogue()
@@ -49,4 +57,31 @@ void PreferencesDialogue::toggleDivideCpuCheckbox(bool checked)
 void PreferencesDialogue::updateProcessesIntervalSpinner(double value)
 {
     settings->setValue("processes update interval", value);
+}
+
+void PreferencesDialogue::updateStandardsRadioButton()
+{
+    const QString settingName = "unit prefix standards";
+    // find out which radio button is pressed and write the setting to the file
+    if (IECStandard->isChecked()) {
+        settings->setValue(settingName, "IEC");
+    } else if (JEDECStandard->isChecked()) {
+        settings->setValue(settingName, "JEDEC");
+    } else if (SIStandard->isChecked()) { // check even though there are only 3!
+        settings->setValue(settingName, "SI");
+    }
+}
+
+void PreferencesDialogue::checkStandardsRadioButtonBasedOnSettingValue()
+{
+    const QString settingName = "unit prefix standards";
+    // find if the setting is set to the correct name and then set the radio buttons
+    const QString value = settings->value(settingName, "JEDEC").toString();
+    if (value == "IEC") {
+        IECStandard->setChecked(true);
+    } else if (value == "JEDEC") {
+        JEDECStandard->setChecked(true);
+    } else if (value == "SI") {
+        SIStandard->setChecked(true);
+    }
 }

@@ -27,6 +27,7 @@
 #include "cputools.h"
 #include <deque>
 #include <QSettings>
+#include "memoryconverter.h"
 
 typedef QVector<QVector<double>> qcustomplotCpuVector;
 
@@ -53,6 +54,7 @@ private:
     std::deque<std::vector<double>> cpuPlotData;
     QVector<QVector<double>> *plottingData;
     QSettings *settings;
+    unitStandard standard;
 };
 
 #endif // RESOURCESWORKER_H

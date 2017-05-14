@@ -19,9 +19,8 @@
 #include <proc/sysinfo.h>
 #include <iostream>
 #include <string>
-#include "memoryconversion.h"
 #include "cputools.h"
-using namespace memoryConversion;
+#include "memoryconverter.h"
 using namespace cpuTools;
 
 resourcesWorker::resourcesWorker(QObject *parent, QSettings *settings)
@@ -109,16 +108,12 @@ void resourcesWorker::updateMemory()
     double memory = ((double)kb_main_used / kb_main_total) * 100;
     emit(updateMemoryBar(memory));
 
-    memoryEntry mainUsed = convertMemoryUnit(kb_main_used,memoryUnit::kb);
-    memoryEntry mainTotal = convertMemoryUnit(kb_main_total,memoryUnit::kb);
+    memoryConverter mainUsed = memoryConverter(kb_main_used,memoryUnit::kb,standard);
+    memoryConverter mainTotal = memoryConverter(kb_main_total,memoryUnit::kb,standard);
 
-    // cleanup the memory values
-    std::string mainUsedValue = dbl2str(truncateDouble(roundDouble(mainUsed.id),1));
-    std::string mainTotalValue = dbl2str(truncateDouble(roundDouble(mainTotal.id),1));
-    std::string memPercent = dbl2str(truncateDouble(roundDouble(memory),1));
+    std::string memPercent = memoryConverter::dbl2str(memoryConverter::truncateDouble(memoryConverter::roundDouble(memory, 1),1));
 
-    std::string memoryText = mainUsedValue + unitToString(mainUsed.unit)
-            + " (" + memPercent + "%) of " + mainTotalValue + unitToString(mainTotal.unit);
+    std::string memoryText = mainUsed.to_string() + " (" + memPercent + "%) of " + mainTotal.to_string();
     emit(updateMemoryText(QString::fromStdString(memoryText)));
 }
 
@@ -132,16 +127,14 @@ void resourcesWorker::updateSwap()
         // swap is active
         double swap = ((double)kb_swap_used / kb_swap_total) * 100;
         emit(updateSwapBar(swap));
-        memoryEntry swapUsed = convertMemoryUnit(kb_swap_used,memoryUnit::kb);
-        memoryEntry swapTotal = convertMemoryUnit(kb_swap_total,memoryUnit::kb);
+
+        memoryConverter swapUsed = memoryConverter(kb_swap_used,memoryUnit::kb,standard);
+        memoryConverter swapTotal = memoryConverter(kb_swap_total,memoryUnit::kb,standard);
 
         // cleanup the swap values
-        std::string swapUsedValue = dbl2str(truncateDouble(roundDouble(swapUsed.id),1));
-        std::string swapTotalValue = dbl2str(truncateDouble(roundDouble(swapTotal.id),1));
-        std::string swapPercent = dbl2str(truncateDouble(roundDouble(swap),1));
+        std::string swapPercent = memoryConverter::dbl2str(memoryConverter::truncateDouble(memoryConverter::roundDouble(swap, 1),1));
 
-        std::string swapText = swapUsedValue + unitToString(swapUsed.unit)
-                + " (" + swapPercent + "%) of " + swapTotalValue + unitToString(swapTotal.unit);
+        std::string swapText = swapUsed.to_string() + " (" + swapPercent + "%) of " + swapTotal.to_string();
         emit(updateSwapText(QString::fromStdString(swapText)));
     } else {
         // there is no swap
@@ -158,6 +151,8 @@ void resourcesWorker::loop()
     meminfo(); // have procps read the memory
     //std::cout << kb_main_used << "/" << kb_main_total << std::endl;
     //std::cout << memory << "%" << std::endl;
+
+    standard = memoryConverter::stringToStandard(settings->value("unit prefix standards", JEDEC).toString().toStdString());
 
     updateCpu();
     updateMemory();

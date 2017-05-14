@@ -74,7 +74,7 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector *values)
     }
 
     static bool previouslyPlotted = false;
-    int size = values->size();
+    int size = values->count();//values->size();
     if (size == 0) {
         return;
     }

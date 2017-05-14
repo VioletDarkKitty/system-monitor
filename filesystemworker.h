@@ -20,9 +20,8 @@
 #include <QObject>
 #include "workerthread.h"
 #include <QTableWidget>
-#include "memoryconversion.h"
 #include <QSettings>
-using namespace memoryConversion;
+#include "memoryconverter.h"
 
 class fileSystemWorker : public QObject, public workerThread
 {
@@ -44,9 +43,9 @@ private:
         QString name;
         QString mountPoint;
         QString type;
-        memoryEntry freeSize;
-        memoryEntry totalSize;
-        memoryEntry usedSize;
+        memoryConverter *freeSize;
+        memoryConverter *totalSize;
+        memoryConverter *usedSize;
         int usedPercentage;
         float io;
         long ioms;
@@ -56,6 +55,7 @@ private:
     std::vector<disk> readMtabDisks();
     void fillDiskStructures(std::vector<disk> &disks);
     QSettings *settings;
+    unitStandard standard;
 };
 
 #endif // FILESYSTEMWORKER_H

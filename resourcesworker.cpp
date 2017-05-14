@@ -35,16 +35,13 @@ resourcesWorker::resourcesWorker(QObject *parent, QSettings *settings)
     connect(this,SIGNAL(updateMemoryText(QString)),memoryLabel,SLOT(setText(QString)));
     connect(this,SIGNAL(updateSwapBar(int)),swapBar,SLOT(setValue(int)));
     connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));
-    plottingData = nullptr;
 
     this->settings = settings;
 }
 
 resourcesWorker::~resourcesWorker()
 {
-    if (plottingData != nullptr) {
-        delete plottingData;
-    }
+
 }
 
 void resourcesWorker::updateCpu()
@@ -64,11 +61,7 @@ void resourcesWorker::updateCpu()
     }
     prevCpuTimes = cpuTimes;
 
-    // construct the qvectors to use to plot
-    if (plottingData != nullptr) {
-        delete plottingData;
-    }
-    plottingData = new QVector<QVector<double>>();
+    QVector<QVector<double>> plottingData = QVector<QVector<double>>();
 
     // The data is arranged in vectors but each vector has points that are intended
     // for multiple plots on multi core machines.
@@ -80,20 +73,20 @@ void resourcesWorker::updateCpu()
     for(unsigned int i=0; i<cpuPlotData.at(0).size(); i++) {
         QVector<double> headingVector;
         headingVector.push_back(cpuPlotData.at(0).at(i));
-        plottingData->push_back(headingVector);
+        plottingData.push_back(headingVector);
     }
 
     // now that the initial qvectors are filled, we can append the rest of the data
     for(unsigned int i=1; i<cpuPlotData.size(); i++) {
         for(unsigned int j=0; j<cpuPlotData.at(i).size(); j++) {
-            (*plottingData)[j].push_back(cpuPlotData.at(i).at(j));
+            plottingData[j].push_back(cpuPlotData.at(i).at(j));
         }
     }
 
     // there might not be enough data in each array so pad with 0s on the front if so
-    for(int i=0; i<plottingData->size(); i++) {
-        for(unsigned int j=60 - plottingData->at(i).size(); j>0; j--) {
-            (*plottingData)[i].push_front((double)0);
+    for(int i=0; i<plottingData.size(); i++) {
+        for(unsigned int j=60 - plottingData.at(i).size(); j>0; j--) {
+            plottingData[i].push_front((double)0);
         }
     }
 

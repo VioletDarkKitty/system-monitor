@@ -42,7 +42,7 @@ signals:
     void updateMemoryText(QString value);
     void updateSwapBar(int value);
     void updateSwapText(QString value);
-    void updateCpuPlotSIG(const qcustomplotCpuVector *values);
+    void updateCpuPlotSIG(const qcustomplotCpuVector &values);
 private:
     void loop();
     QProgressBar *memoryBar, *swapBar;
@@ -52,7 +52,6 @@ private:
     void updateCpu();
     std::vector<cpuTools::cpuStruct> prevCpuTimes;
     std::deque<std::vector<double>> cpuPlotData;
-    QVector<QVector<double>> *plottingData;
     QSettings *settings;
     unitStandard standard;
 };

@@ -12,6 +12,9 @@ Dependancies
 System monitor depends on libprocps, this can be installed on debian
 based systems from the package libprocps-dev.
 
+Please use libprocps6 is available. Versions lower than 2:2.3.12 are
+known to cause sigsegv.
+
 ## References
 
 * QCustomPlot - [http://qcustomplot.com/](http://qcustomplot.com/)

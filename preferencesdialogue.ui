@@ -20,7 +20,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="processesTab">
       <attribute name="title">
@@ -107,7 +107,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>117</width>
+              <width>320</width>
               <height>182</height>
              </rect>
             </property>
@@ -196,14 +196,21 @@
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+            <widget class="QDoubleSpinBox" name="updateIntervalResourcesSpinner">
+             <property name="minimum">
+              <double>0.250000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.250000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox_8">
+          <widget class="QCheckBox" name="stackedCpuCheckbox">
            <property name="text">
-            <string>CheckBox</string>
+            <string>Draw CPU chart as stacked area chart</string>
            </property>
           </widget>
          </item>
@@ -306,7 +313,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>117</width>
+              <width>320</width>
               <height>182</height>
              </rect>
             </property>

@@ -34,6 +34,10 @@ PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
     connect(updateIntervalProcessesSpinner,SIGNAL(valueChanged(double)),this,SLOT(updateProcessesIntervalSpinner(double)));
     updateIntervalProcessesSpinner->setValue(settings->value("processes update interval", 1.0).toDouble());
 
+    QDoubleSpinBox *updateIntervalResourcesSpinner = this->findChild<QDoubleSpinBox*>("updateIntervalResourcesSpinner");
+    connect(updateIntervalResourcesSpinner,SIGNAL(valueChanged(double)),this,SLOT(updateResourcesIntervalSpinner(double)));
+    updateIntervalResourcesSpinner->setValue(settings->value("resources update interval", 1.0).toDouble());
+
     IECStandard = this->findChild<QRadioButton*>("IECButton");
     connect(IECStandard,SIGNAL(toggled(bool)),this,SLOT(updateStandardsRadioButton()));
     JEDECStandard = this->findChild<QRadioButton*>("JEDECButton");
@@ -41,6 +45,10 @@ PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
     SIStandard = this->findChild<QRadioButton*>("SIButton");
     connect(SIStandard,SIGNAL(toggled(bool)),this,SLOT(updateStandardsRadioButton()));
     checkStandardsRadioButtonBasedOnSettingValue();
+
+    QCheckBox* stackedCpuCheckbox = this->findChild<QCheckBox*>("stackedCpuCheckbox");
+    connect(stackedCpuCheckbox,SIGNAL(clicked(bool)),this,SLOT(toggleStackedCpuCheckbox(bool)));
+    stackedCpuCheckbox->setChecked(settings->value("draw cpu area stacked", false).toBool());
 }
 
 PreferencesDialogue::~PreferencesDialogue()
@@ -50,13 +58,22 @@ PreferencesDialogue::~PreferencesDialogue()
 
 void PreferencesDialogue::toggleDivideCpuCheckbox(bool checked)
 {
-
     settings->setValue("divide process cpu by cpu count",checked);
+}
+
+void PreferencesDialogue::toggleStackedCpuCheckbox(bool checked)
+{
+    settings->setValue("draw cpu area stacked",checked);
 }
 
 void PreferencesDialogue::updateProcessesIntervalSpinner(double value)
 {
     settings->setValue("processes update interval", value);
+}
+
+void PreferencesDialogue::updateResourcesIntervalSpinner(double value)
+{
+    settings->setValue("resources update interval", value);
 }
 
 void PreferencesDialogue::updateStandardsRadioButton()

@@ -40,6 +40,8 @@ public slots:
     void toggleDivideCpuCheckbox(bool checked);
     void updateProcessesIntervalSpinner(double value);
     void updateStandardsRadioButton();
+    void toggleStackedCpuCheckbox(bool checked);
+    void updateResourcesIntervalSpinner(double value);
 
 private:
     Ui::PreferencesDialogue *ui;

@@ -151,6 +151,9 @@ void resourcesWorker::loop()
     updateMemory();
     updateSwap();
 
+    if (settings->value("resources update interval",1.0).toDouble() < 0.25) {
+        settings->setValue("resources update interval",0.25);
+    }
     std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(
                                     settings->value("resources update interval",1.0).toDouble() * 1000));
 }

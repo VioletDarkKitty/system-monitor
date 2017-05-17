@@ -92,6 +92,12 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &values)
             cpuPlot->graph(i)->setPen(QPen(QColor(colourNames[i % colourNamesLen])));
         }
         cpuPlot->graph(i)->setData(x, values.at(i));
+
+        if (settings->value("draw cpu area stacked",false).toBool()) {
+            cpuPlot->graph(i)->setBrush(QBrush(QColor(colourNames[i % colourNamesLen])));
+        } else {
+            cpuPlot->graph(i)->setBrush(QBrush());
+        }
     }
     previouslyPlotted = true;
 

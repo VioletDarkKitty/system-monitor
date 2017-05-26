@@ -238,13 +238,16 @@ memoryUnit memoryConverter::prevMemoryUnit(memoryUnit unit)
     return unit;
 }
 
-/*
 void memoryConverter::convertTo(memoryUnit newUnit)
 {
-    memoryEntry converted = fitMemoryValueToUnit(memoryValue, newUnit, getStandardKbSize(standard));
-    this->memoryValue = converted.id;
-    this->unit = converted.unit;
-}*/
+    int mulTimes = (int)this->unit - (int)newUnit;
+    if (mulTimes == 0) {
+        return;
+    }
+
+    this->memoryValue = this->memoryValue * getStandardKbSize(standard) * mulTimes;
+    this->unit = newUnit;
+}
 
 /**
  * @brief memoryConverter::to_string Convert to a string in the format [value] [unit] where value is rounded down to 1 dp

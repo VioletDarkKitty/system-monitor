@@ -116,7 +116,11 @@ void MainWindow::handleTabChange()
 {
     unsigned int index = mainTabs->currentIndex();
     processesThread->setPaused(true);
-    resourcesThread->setPaused(true);
+    if (!settings->value("resourcesKeepThreadRunning", true).toBool()) {
+        resourcesThread->setPaused(true);
+    } else {
+        resourcesThread->setPaused(false);
+    }
     filesystemThread->setPaused(true);
     switch(index) {
         case 0:

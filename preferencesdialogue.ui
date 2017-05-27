@@ -270,6 +270,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="resourcesKeepThreadRunning">
+           <property name="text">
+            <string>Run resources monitor in background</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

@@ -109,7 +109,10 @@ void fileSystemWorker::fillDiskStructures(std::vector<disk> &disks)
             disks[i].totalSize = new memoryConverter((double)device.f_blocks*device.f_frsize,memoryUnit::b,standard);
             disks[i].freeSize = new memoryConverter((double)device.f_bavail*device.f_frsize,memoryUnit::b,standard);
             disks[i].usedSize = new memoryConverter((double)(device.f_blocks - device.f_bfree) * device.f_frsize,memoryUnit::b,standard);
-            disks[i].usedPercentage = disks[i].usedSize->getValue() / disks[i].totalSize->getValue() * 100;
+            // keep the values the same for display of the percentage used
+            memoryConverter totalSizeCopy = memoryConverter(*(disks[i].totalSize));
+            totalSizeCopy.convertTo(disks[i].usedSize->getUnit());
+            disks[i].usedPercentage = disks[i].usedSize->getValue() / totalSizeCopy.getValue() * 100;
         } else {
             throw std::runtime_error(qPrintable("'" + disks[i].mountPoint + "'' failed statvfs!"));
         }

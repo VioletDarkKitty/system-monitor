@@ -89,6 +89,10 @@ PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
         signalMapper->setMapping(currentCheckbox, currentCheckbox);
         connect(currentCheckbox, SIGNAL(clicked()), signalMapper, SLOT(map()));
     }
+
+    QCheckBox* runResourcesThreadInBackgroundCheckbox = this->findChild<QCheckBox*>("resourcesKeepThreadRunning");
+    connect(runResourcesThreadInBackgroundCheckbox,SIGNAL(clicked(bool)),this,SLOT(toggleResourcesBackgroundCheckbox(bool)));
+    runResourcesThreadInBackgroundCheckbox->setChecked(settings->value("resourcesKeepThreadRunning", true).toBool());
 }
 
 PreferencesDialogue::~PreferencesDialogue()
@@ -147,4 +151,9 @@ void PreferencesDialogue::toggleProcessCheckbox(QWidget* checkbox)
 {
     QCheckBox* changingCheckbox = (QCheckBox*)checkbox;
     settings->setValue(changingCheckbox->property("objectName").toString(),changingCheckbox->isChecked());
+}
+
+void PreferencesDialogue::toggleResourcesBackgroundCheckbox(bool checked)
+{
+    settings->setValue("resourcesKeepThreadRunning", checked);
 }

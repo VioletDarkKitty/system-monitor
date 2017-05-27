@@ -39,7 +39,7 @@ public:
     memoryConverter& operator=(const memoryConverter& other);
     bool operator <(const memoryConverter &other) const;
     operator std::string();
-    //void convertTo(memoryUnit newUnit);
+    void convertTo(memoryUnit newUnit);
     static unitStandard stringToStandard(std::string standard) {
         if (standard == "IEC") {
             return IEC;

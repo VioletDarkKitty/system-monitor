@@ -43,6 +43,7 @@ public slots:
     void toggleStackedCpuCheckbox(bool checked);
     void updateResourcesIntervalSpinner(double value);
     void toggleProcessCheckbox(QWidget* checkbox);
+    void toggleResourcesBackgroundCheckbox(bool checked);
 
 private:
     Ui::PreferencesDialogue *ui;

@@ -49,6 +49,10 @@ PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
     QCheckBox* stackedCpuCheckbox = this->findChild<QCheckBox*>("stackedCpuCheckbox");
     connect(stackedCpuCheckbox,SIGNAL(clicked(bool)),this,SLOT(toggleStackedCpuCheckbox(bool)));
     stackedCpuCheckbox->setChecked(settings->value("draw cpu area stacked", false).toBool());
+
+    QCheckBox* runResourcesThreadInBackgroundCheckbox = this->findChild<QCheckBox*>("resourcesKeepThreadRunning");
+    connect(runResourcesThreadInBackgroundCheckbox,SIGNAL(clicked(bool)),this,SLOT(toggleResourcesBackgroundCheckbox(bool)));
+    runResourcesThreadInBackgroundCheckbox->setChecked(settings->value("resourcesKeepThreadRunning", true).toBool());
 }
 
 PreferencesDialogue::~PreferencesDialogue()
@@ -101,4 +105,9 @@ void PreferencesDialogue::checkStandardsRadioButtonBasedOnSettingValue()
     } else if (value == "SI") {
         SIStandard->setChecked(true);
     }
+}
+
+void PreferencesDialogue::toggleResourcesBackgroundCheckbox(bool checked)
+{
+    settings->setValue("resourcesKeepThreadRunning", checked);
 }

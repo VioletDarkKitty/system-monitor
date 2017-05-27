@@ -42,6 +42,7 @@ public slots:
     void updateStandardsRadioButton();
     void toggleStackedCpuCheckbox(bool checked);
     void updateResourcesIntervalSpinner(double value);
+    void toggleResourcesBackgroundCheckbox(bool checked);
 
 private:
     Ui::PreferencesDialogue *ui;

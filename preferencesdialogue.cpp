@@ -93,6 +93,11 @@ PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
     QCheckBox* runResourcesThreadInBackgroundCheckbox = this->findChild<QCheckBox*>("resourcesKeepThreadRunning");
     connect(runResourcesThreadInBackgroundCheckbox,SIGNAL(clicked(bool)),this,SLOT(toggleResourcesBackgroundCheckbox(bool)));
     runResourcesThreadInBackgroundCheckbox->setChecked(settings->value("resourcesKeepThreadRunning", true).toBool());
+
+    QCheckBox* cachedMemoryIsUsed = this->findChild<QCheckBox*>("cachedMemoryIsUsed");
+    connect(cachedMemoryIsUsed,SIGNAL(clicked(bool)),this,SLOT(toggleCachedIsUsedCheckbox(bool)));
+    cachedMemoryIsUsed->setChecked(settings->value("cachedMemoryIsUsed", false).toBool());
+
 }
 
 PreferencesDialogue::~PreferencesDialogue()
@@ -156,4 +161,9 @@ void PreferencesDialogue::toggleProcessCheckbox(QWidget* checkbox)
 void PreferencesDialogue::toggleResourcesBackgroundCheckbox(bool checked)
 {
     settings->setValue("resourcesKeepThreadRunning", checked);
+}
+
+void PreferencesDialogue::toggleCachedIsUsedCheckbox(bool checked)
+{
+    settings->setValue("cachedMemoryIsUsed", checked);
 }

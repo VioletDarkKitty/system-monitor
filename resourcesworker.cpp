@@ -98,12 +98,20 @@ void resourcesWorker::updateCpu()
  */
 void resourcesWorker::updateMemory()
 {
-    double memory = ((double)kb_main_used / kb_main_total) * 100;
-    emit(updateMemoryBar(memory));
+    memoryConverter mainUsed;
+    // GSM includes cached/buffered memory in the used memory but excludes shared memory
+    if (settings->value("cachedMemoryIsUsed", false).toBool()) {
+        mainUsed = memoryConverter(kb_main_used + kb_main_buffers + kb_main_cached - kb_main_shared,memoryUnit::kb,standard);
+    } else {
+        mainUsed = memoryConverter(kb_main_used,memoryUnit::kb,standard);
+    }
 
-    memoryConverter mainUsed = memoryConverter(kb_main_used,memoryUnit::kb,standard);
     memoryConverter mainTotal = memoryConverter(kb_main_total,memoryUnit::kb,standard);
 
+    memoryConverter mainUsedCopy = mainUsed;
+    mainUsedCopy.convertTo(mainTotal.getUnit());
+    double memory = (mainUsedCopy.getValue() / mainTotal.getValue()) * 100;
+    emit(updateMemoryBar(memory));
     std::string memPercent = memoryConverter::dbl2str(memoryConverter::truncateDouble(memoryConverter::roundDouble(memory, 1),1));
 
     std::string memoryText = mainUsed.to_string() + " (" + memPercent + "%) of " + mainTotal.to_string();

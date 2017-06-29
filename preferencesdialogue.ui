@@ -277,6 +277,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="cachedMemoryIsUsed">
+           <property name="text">
+            <string>Include cached memory in used</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

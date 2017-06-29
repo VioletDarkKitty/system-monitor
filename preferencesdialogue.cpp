@@ -18,6 +18,7 @@
 #include "preferencesdialogue.h"
 #include "ui_preferencesdialogue.h"
 #include <QCheckBox>
+#include <QSignalMapper>
 
 PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
     QDialog(parent),
@@ -50,9 +51,53 @@ PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
     connect(stackedCpuCheckbox,SIGNAL(clicked(bool)),this,SLOT(toggleStackedCpuCheckbox(bool)));
     stackedCpuCheckbox->setChecked(settings->value("draw cpu area stacked", false).toBool());
 
+    std::vector<QCheckBox*> processColShowCheckboxes = {
+        this->findChild<QCheckBox*>("processSharedCheckbox"),
+        this->findChild<QCheckBox*>("processNiceCheckbox"),
+        this->findChild<QCheckBox*>("processStartedCheckbox"),
+        this->findChild<QCheckBox*>("processUserCheckbox"),
+        this->findChild<QCheckBox*>("processPidCheckbox"),
+        this->findChild<QCheckBox*>("processResidentMemoryCheckbox"),
+        this->findChild<QCheckBox*>("processCpuTimeCheckbox"),
+        this->findChild<QCheckBox*>("processMemoryCheckbox"),
+        this->findChild<QCheckBox*>("processCpuCheckbox"),
+        this->findChild<QCheckBox*>("processCommandlineCheckbox"),
+        this->findChild<QCheckBox*>("processStatusCheckbox"),
+        this->findChild<QCheckBox*>("processVirtualMemoryCheckbox"),
+        this->findChild<QCheckBox*>("processNameCheckbox")
+    };
+
+    QSignalMapper *signalMapper = new QSignalMapper(this);
+    connect(signalMapper,SIGNAL(mapped(QWidget*)),this,SLOT(toggleProcessCheckbox(QWidget*)));
+
+    for(unsigned int i=0; i<processColShowCheckboxes.size(); i++) {
+        QCheckBox* currentCheckbox = processColShowCheckboxes.at(i);
+
+        bool isDefaulted = false;
+        static std::vector<QString> defaultCheckboxes = {
+            "processNameCheckbox", "processUserCheckbox", "processCpuCheckbox",
+            "processPidCheckbox", "processMemoryCheckbox"
+        };
+        for(unsigned int j=0; j<defaultCheckboxes.size(); j++) {
+            if (defaultCheckboxes.at(j) == currentCheckbox->property("objectName").toString()) {
+                isDefaulted = true;
+                break;
+            }
+        }
+
+        currentCheckbox->setChecked(settings->value(currentCheckbox->property("objectName").toString(),isDefaulted).toBool());
+        signalMapper->setMapping(currentCheckbox, currentCheckbox);
+        connect(currentCheckbox, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    }
+
     QCheckBox* runResourcesThreadInBackgroundCheckbox = this->findChild<QCheckBox*>("resourcesKeepThreadRunning");
     connect(runResourcesThreadInBackgroundCheckbox,SIGNAL(clicked(bool)),this,SLOT(toggleResourcesBackgroundCheckbox(bool)));
     runResourcesThreadInBackgroundCheckbox->setChecked(settings->value("resourcesKeepThreadRunning", true).toBool());
+
+    QCheckBox* cachedMemoryIsUsed = this->findChild<QCheckBox*>("cachedMemoryIsUsed");
+    connect(cachedMemoryIsUsed,SIGNAL(clicked(bool)),this,SLOT(toggleCachedIsUsedCheckbox(bool)));
+    cachedMemoryIsUsed->setChecked(settings->value("cachedMemoryIsUsed", false).toBool());
+
 }
 
 PreferencesDialogue::~PreferencesDialogue()
@@ -107,7 +152,18 @@ void PreferencesDialogue::checkStandardsRadioButtonBasedOnSettingValue()
     }
 }
 
+void PreferencesDialogue::toggleProcessCheckbox(QWidget* checkbox)
+{
+    QCheckBox* changingCheckbox = (QCheckBox*)checkbox;
+    settings->setValue(changingCheckbox->property("objectName").toString(),changingCheckbox->isChecked());
+}
+
 void PreferencesDialogue::toggleResourcesBackgroundCheckbox(bool checked)
 {
     settings->setValue("resourcesKeepThreadRunning", checked);
+}
+
+void PreferencesDialogue::toggleCachedIsUsedCheckbox(bool checked)
+{
+    settings->setValue("cachedMemoryIsUsed", checked);
 }

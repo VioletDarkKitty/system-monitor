@@ -41,6 +41,7 @@ public:
 
 public slots:
     void updateCpuPlotSLO(const qcustomplotCpuVector &values);
+    void updateNetworkPlotSLO(const qcustomplotNetworkVector &values);
 
 private slots:
     void handleTabChange();
@@ -53,7 +54,7 @@ private:
     fileSystemWorker* filesystemThread;
     QTabWidget* mainTabs;
     QAction *quitAction, *aboutAction, *preferencesAction;
-    QCustomPlot *cpuPlot;
+    QCustomPlot *cpuPlot, *networkPlot;
     QSettings *settings;
 };
 

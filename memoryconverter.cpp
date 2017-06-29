@@ -245,7 +245,12 @@ void memoryConverter::convertTo(memoryUnit newUnit)
         return;
     }
 
-    this->memoryValue = this->memoryValue * getStandardKbSize(standard) * mulTimes;
+    if (mulTimes < 0) {
+        this->memoryValue = this->memoryValue / (getStandardKbSize(standard) * abs(mulTimes));
+    } else {
+        this->memoryValue = this->memoryValue * (getStandardKbSize(standard) * mulTimes);
+    }
+
     this->unit = newUnit;
 }
 

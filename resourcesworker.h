@@ -30,6 +30,7 @@
 #include "memoryconverter.h"
 
 typedef QVector<QVector<double>> qcustomplotCpuVector;
+typedef QVector<QVector<memoryConverter>> qcustomplotNetworkVector;
 
 class resourcesWorker : public QObject, public workerThread
 {
@@ -47,6 +48,7 @@ signals:
     void updateNetworkRecievingTotal(QString value);
     void updateNetworkSending(QString value);
     void updateNetworkSendingTotal(QString value);
+    void updateNetworkPlotSIG(const qcustomplotNetworkVector &values);
 private:
     void loop();
     QProgressBar *memoryBar, *swapBar;

@@ -208,6 +208,29 @@ void resourcesWorker::updateNetwork()
     memoryConverter recieved = memoryConverter(totalRecievedBytes,memoryUnit::b,standard);
     emit(updateNetworkRecievingTotal(QString::fromStdString(recieved.to_string())));
 
+    // prepare the data for plotting
+    // this qvector is of 2 elements, the first being recieving and the second sending
+    static QVector<QVector<memoryConverter>> plottingData = QVector<QVector<memoryConverter>>();
+
+    if (plottingData.empty()) {
+        // fill with initial data
+        for(int i=0; i<2; i++) {
+            plottingData.push_back(QVector<memoryConverter>());
+            for(unsigned int j=0; j<60; j++) {
+                plottingData[i].push_back(memoryConverter(0,memoryUnit::b,standard));
+            }
+        }
+    }
+
+    if (lastSentBytes != 0) {
+        plottingData[0].pop_front();
+        plottingData[0].push_back(recieving);
+        plottingData[1].pop_front();
+        plottingData[1].push_back(sending);
+
+        emit(updateNetworkPlotSIG(plottingData));
+    }
+
     lastSentBytes = totalSentBytes;
     lastRecievedBytes = totalRecievedBytes;
 }

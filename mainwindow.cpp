@@ -53,6 +53,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(resourcesThread,SIGNAL(updateCpuPlotSIG(const qcustomplotCpuVector&)),
             this,SLOT(updateCpuPlotSLO(const qcustomplotCpuVector&)));
 
+    qRegisterMetaType<qcustomplotNetworkVector>("qcustomplotNetworkVector");
+    networkPlot = reinterpret_cast<QCustomPlot*>(ui->tabResources->findChild<QWidget*>("networkPlot"));
+    connect(resourcesThread,SIGNAL(updateNetworkPlotSIG(const qcustomplotNetworkVector&)),
+            this,SLOT(updateNetworkPlotSLO(qcustomplotNetworkVector)));
+
     handleTabChange();
 }
 
@@ -107,6 +112,67 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &values)
     cpuPlot->xAxis->setRange(0, 60);
     cpuPlot->yAxis->setRange(0, 100);
     cpuPlot->replot();
+}
+
+void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
+{
+    const memoryConverter *sendingMax = nullptr, *recievingMax = nullptr;
+
+    // find max value to scale all other values by
+    for(unsigned int i=0; i<2; i++) {
+        for(int j=0; j<values.at(i).size(); j++) {
+            switch(i) {
+                case 0:
+                if (sendingMax == nullptr || (*sendingMax) < values.at(i).at(j)) {
+                    sendingMax = &(values.at(i).at(j));
+                }
+                break;
+                case 1:
+                if (recievingMax == nullptr || (*recievingMax) < values.at(i).at(j)) {
+                    recievingMax = &(values.at(i).at(j));
+                }
+                break;
+            }
+        }
+    }
+
+    // scale values to the same unit and then plot
+    const memoryConverter *scaler = sendingMax;
+    if (sendingMax < recievingMax) {
+        scaler = recievingMax;
+    }
+
+    QVector<QVector<double>> scaled;
+
+    for(unsigned int i=0; i<2; i++) {
+        QVector<double> scaledValuesTemp;
+        for(int j=0; j<values.at(i).size(); j++) {
+            memoryConverter temp = memoryConverter(values.at(i).at(j));
+            temp.convertTo(scaler->getUnit());
+            scaledValuesTemp.push_back(temp.getValue());
+        }
+        scaled.push_back(scaledValuesTemp);
+    }
+
+    QVector<double> x(60); // initialize with entries 60..0
+    for (int i=59; i>0; --i)
+    {
+      x[i] = i;
+    }
+
+    const QString colours[] = {
+        "blue", "red"
+    };
+
+    for(unsigned int i=0; i<2; i++) {
+        networkPlot->addGraph();
+        networkPlot->graph(i)->setPen(QPen(QColor(colours[i])));
+        networkPlot->graph(i)->setData(x, scaled.at(i));
+    }
+
+    networkPlot->xAxis->setRange(0, 60);
+    networkPlot->yAxis->setRange(0, scaler->getValue() + 1);
+    networkPlot->replot();
 }
 
 /**

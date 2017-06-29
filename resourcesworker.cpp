@@ -31,10 +31,20 @@ resourcesWorker::resourcesWorker(QObject *parent, QSettings *settings)
     swapBar = parent->findChild<QProgressBar*>("swapBar");
     swapLabel = parent->findChild<QLabel*>("swapLabel");
 
+    networkRecievingLabel = parent->findChild<QLabel*>("networkRecievingLabel");
+    networkRecievingTotalLabel = parent->findChild<QLabel*>("networkTotalRecievedLabel");
+    networkSendingLabel = parent->findChild<QLabel*>("networkSendingLabel");
+    networkSendingTotalLabel = parent->findChild<QLabel*>("networkTotalSentLabel");
+
     connect(this,SIGNAL(updateMemoryBar(int)),memoryBar,SLOT(setValue(int)));
     connect(this,SIGNAL(updateMemoryText(QString)),memoryLabel,SLOT(setText(QString)));
     connect(this,SIGNAL(updateSwapBar(int)),swapBar,SLOT(setValue(int)));
     connect(this,SIGNAL(updateSwapText(QString)),swapLabel,SLOT(setText(QString)));
+
+    connect(this,SIGNAL(updateNetworkRecieving(QString)),networkRecievingLabel,SLOT(setText(QString)));
+    connect(this,SIGNAL(updateNetworkRecievingTotal(QString)),networkRecievingTotalLabel,SLOT(setText(QString)));
+    connect(this,SIGNAL(updateNetworkSending(QString)),networkSendingLabel,SLOT(setText(QString)));
+    connect(this,SIGNAL(updateNetworkSendingTotal(QString)),networkSendingTotalLabel,SLOT(setText(QString)));
 
     this->settings = settings;
 }
@@ -145,6 +155,64 @@ void resourcesWorker::updateSwap()
 }
 
 /**
+ * @brief resourcesWorker::updateNetwork Search for network interfaces and total their sending and recieving bytes for display
+ * and then display them
+ */
+void resourcesWorker::updateNetwork()
+{
+    static long long lastSentBytes = 0, lastRecievedBytes = 0;
+    long long totalSentBytes = 0, totalRecievedBytes = 0;
+
+    // search in /sys/class/net for interfaces and total their bytes
+    // ignore lo as this could look like an idle disconnected system is still sending data
+    /// TODO: have an option to include lo traffic
+
+    QDirIterator dirIt("/sys/class/net",QDirIterator::NoIteratorFlags);
+    while (dirIt.hasNext()) {
+        dirIt.next();
+
+        if (dirIt.fileName() == "." || dirIt.fileName() == "..") {
+            continue;
+        }
+
+        // follow symbolic links to check for folders that link to ../../devices/virtual/[name] as these are not true interfaces, lo is also virtual
+        QFileInfo fInfo = QFileInfo(dirIt.filePath());
+        QString path = fInfo.canonicalFilePath();
+
+        if (path.contains("/devices/virtual/net/")) {
+            continue;
+        }
+
+        // total bytes from this folder
+        QFile sending(QString(path + "/statistics/tx_bytes"));
+        sending.open(QIODevice::ReadOnly);
+        //qDebug() << "tx " << dirIt.fileName() << sending.readLine();
+        totalSentBytes += QString(sending.readLine()).toLongLong();
+        QFile recieving(QString(path + "/statistics/rx_bytes"));
+        recieving.open(QIODevice::ReadOnly);
+        totalRecievedBytes += QString(recieving.readLine()).toLongLong();
+    }
+
+    long long sentSinceLastCheck = totalSentBytes - lastSentBytes;
+    long long recievedSinceLastCheck = totalRecievedBytes - lastRecievedBytes;
+
+    memoryConverter sending = memoryConverter(sentSinceLastCheck,memoryUnit::b,standard);
+    emit(updateNetworkSending(QString::fromStdString(sending.to_string())+"/s"));
+
+    memoryConverter recieving = memoryConverter(recievedSinceLastCheck,memoryUnit::b,standard);
+    emit(updateNetworkRecieving(QString::fromStdString(recieving.to_string())+"/s"));
+
+    memoryConverter sent = memoryConverter(totalSentBytes,memoryUnit::b,standard);
+    emit(updateNetworkSendingTotal(QString::fromStdString(sent.to_string())));
+
+    memoryConverter recieved = memoryConverter(totalRecievedBytes,memoryUnit::b,standard);
+    emit(updateNetworkRecievingTotal(QString::fromStdString(recieved.to_string())));
+
+    lastSentBytes = totalSentBytes;
+    lastRecievedBytes = totalRecievedBytes;
+}
+
+/**
  * @brief resourcesWorker::loop Loop this threads execution
  */
 void resourcesWorker::loop()
@@ -158,6 +226,7 @@ void resourcesWorker::loop()
     updateCpu();
     updateMemory();
     updateSwap();
+    updateNetwork();
 
     if (settings->value("resources update interval",1.0).toDouble() < 0.25) {
         settings->setValue("resources update interval",0.25);

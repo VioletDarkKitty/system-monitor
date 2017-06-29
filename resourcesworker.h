@@ -43,6 +43,10 @@ signals:
     void updateSwapBar(int value);
     void updateSwapText(QString value);
     void updateCpuPlotSIG(const qcustomplotCpuVector &values);
+    void updateNetworkRecieving(QString value);
+    void updateNetworkRecievingTotal(QString value);
+    void updateNetworkSending(QString value);
+    void updateNetworkSendingTotal(QString value);
 private:
     void loop();
     QProgressBar *memoryBar, *swapBar;
@@ -54,6 +58,8 @@ private:
     std::deque<std::vector<double>> cpuPlotData;
     QSettings *settings;
     unitStandard standard;
+    QLabel *networkRecievingLabel, *networkRecievingTotalLabel, *networkSendingLabel, *networkSendingTotalLabel;
+    void updateNetwork();
 };
 
 #endif // RESOURCESWORKER_H

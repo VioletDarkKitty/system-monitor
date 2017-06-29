@@ -45,13 +45,16 @@ processInformationWorker::processInformationWorker(QObject *parent, QSettings *s
     QAction* actionStop = new QAction("Stop",processesTable);
     connect(actionStop,SIGNAL(triggered(bool)),SLOT(handleProcessStop()));
 
+    QAction* actionKill = new QAction("Kill",processesTable);
+    connect(actionKill, SIGNAL(triggered(bool)),SLOT(handleProcessKill()));
+
     QAction* actionProperties = new QAction("Properties",processesTable);
     connect(actionProperties,SIGNAL(triggered(bool)),this,SLOT(showProcessProperties()));
     connect(processesTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(showProcessProperties()));
 
     QList<QAction*> rightClickActions;
     rightClickActions.push_back(actionStop);
-    rightClickActions.push_back(new QAction("Kill",processesTable));
+    rightClickActions.push_back(actionKill);
     rightClickActions.push_back(actionProperties);
 
     processesTable->setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -126,6 +129,33 @@ void processInformationWorker::handleProcessStop()
         if (kill(pid,SIGTERM)!=0) {
             if (errno==EPERM) {
                 // show a dialogue that we did not have permission to SIGTERM pid
+                QMessageBox::information(processesTable, "Error",
+                                "Could not send signal, permission denied!", QMessageBox::Ok);
+            }
+        }
+    }
+}
+
+/**
+ * @brief processInformationWorker::handleProcessKill Function to run when the user selects stop as an option for a process
+ */
+void processInformationWorker::handleProcessKill()
+{
+    /// TODO: ask for privilage escalation when controlling other users' processes
+    int row = processesTable->currentIndex().row();
+    // get PID
+    int pid = processesTable->item(row,3)->text().toInt();
+
+    QMessageBox::StandardButton reply;
+    std::string info = "Are you sure you want to kill "+processesTable->item(row,0)->text().toStdString();
+    reply = QMessageBox::question(processesTable, "Info", QString::fromStdString(info),
+                                  QMessageBox::Yes|QMessageBox::No);
+
+    if (reply == QMessageBox::Yes) {
+        // attempt to send signal
+        if (kill(pid,SIGKILL)!=0) {
+            if (errno==EPERM) {
+                // show a dialogue that we did not have permission to SIGKILL pid
                 QMessageBox::information(processesTable, "Error",
                                 "Could not send signal, permission denied!", QMessageBox::Ok);
             }

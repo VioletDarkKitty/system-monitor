@@ -40,6 +40,7 @@ public:
 
 private slots:
     void handleProcessStop();
+    void handleProcessKill();
     void updateTable();
     void filterProcesses(QString filter);
     void changeCurrentTableRowSelection(QModelIndex current);

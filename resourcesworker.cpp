@@ -21,6 +21,7 @@
 #include <string>
 #include "cputools.h"
 #include "memoryconverter.h"
+#include <ctime>
 using namespace cpuTools;
 
 resourcesWorker::resourcesWorker(QObject *parent, QSettings *settings)
@@ -196,10 +197,13 @@ void resourcesWorker::updateNetwork()
     long long sentSinceLastCheck = totalSentBytes - lastSentBytes;
     long long recievedSinceLastCheck = totalRecievedBytes - lastRecievedBytes;
 
-    memoryConverter sending = memoryConverter(sentSinceLastCheck,memoryUnit::b,standard);
+    // used to scale the per second measurements to actually be for one second
+    double waitDuration = settings->value("resources update interval",1.0).toDouble();
+
+    memoryConverter sending = memoryConverter(sentSinceLastCheck / waitDuration,memoryUnit::b,standard);
     emit(updateNetworkSending(QString::fromStdString(sending.to_string())+"/s"));
 
-    memoryConverter recieving = memoryConverter(recievedSinceLastCheck,memoryUnit::b,standard);
+    memoryConverter recieving = memoryConverter(recievedSinceLastCheck / waitDuration,memoryUnit::b,standard);
     emit(updateNetworkRecieving(QString::fromStdString(recieving.to_string())+"/s"));
 
     memoryConverter sent = memoryConverter(totalSentBytes,memoryUnit::b,standard);
@@ -240,6 +244,12 @@ void resourcesWorker::updateNetwork()
  */
 void resourcesWorker::loop()
 {
+    clock_t begin = clock();
+
+    if (settings->value("resources update interval",1.0).toDouble() < 0.25) {
+        settings->setValue("resources update interval",0.25);
+    }
+
     meminfo(); // have procps read the memory
     //std::cout << kb_main_used << "/" << kb_main_total << std::endl;
     //std::cout << memory << "%" << std::endl;
@@ -251,9 +261,13 @@ void resourcesWorker::loop()
     updateSwap();
     updateNetwork();
 
-    if (settings->value("resources update interval",1.0).toDouble() < 0.25) {
-        settings->setValue("resources update interval",0.25);
+    // only wait for enough time to fill the interval as some time has been used for calculations
+    clock_t end = clock();
+    double elapsedSecs = double(end - begin) / CLOCKS_PER_SEC;
+
+    double waitTime = settings->value("resources update interval",1.0).toDouble() - elapsedSecs;
+
+    if (waitTime >= 0) {
+        std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(waitTime* 1000));
     }
-    std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(
-                                    settings->value("resources update interval",1.0).toDouble() * 1000));
 }

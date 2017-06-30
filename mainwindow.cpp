@@ -137,9 +137,9 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
     }
 
     // scale values to the same unit and then plot
-    const memoryConverter *scaler = sendingMax;
+    memoryConverter scaler = *sendingMax;
     if (sendingMax < recievingMax) {
-        scaler = recievingMax;
+        scaler = *recievingMax;
     }
 
     QVector<QVector<double>> scaled;
@@ -148,7 +148,7 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
         QVector<double> scaledValuesTemp;
         for(int j=0; j<values.at(i).size(); j++) {
             memoryConverter temp = memoryConverter(values.at(i).at(j));
-            temp.convertTo(scaler->getUnit());
+            temp.convertTo(scaler.getUnit());
             scaledValuesTemp.push_back(temp.getValue());
         }
         scaled.push_back(scaledValuesTemp);
@@ -171,7 +171,7 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
     }
 
     networkPlot->xAxis->setRange(0, 60);
-    networkPlot->yAxis->setRange(0, scaler->getValue() + 1);
+    networkPlot->yAxis->setRange(0, scaler.getValue() + 1);
     networkPlot->replot();
 }
 

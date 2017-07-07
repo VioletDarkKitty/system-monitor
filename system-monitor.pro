@@ -44,7 +44,8 @@ SOURCES += main.cpp\
     qcustomplot.cpp \
     cputools.cpp \
     preferencesdialogue.cpp \
-    memoryconverter.cpp
+    memoryconverter.cpp \
+    cSpline.cpp
 
 HEADERS  += mainwindow.h \
     processinformationworker.h \
@@ -60,7 +61,8 @@ HEADERS  += mainwindow.h \
     cputools.h \
     preferencesdialogue.h \
     hashqstring.h \
-    memoryconverter.h
+    memoryconverter.h \
+    cSpline.h
 
 FORMS    += mainwindow.ui \
     processpropertiesdialogue.ui \

@@ -98,6 +98,9 @@ PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
     connect(cachedMemoryIsUsed,SIGNAL(clicked(bool)),this,SLOT(toggleCachedIsUsedCheckbox(bool)));
     cachedMemoryIsUsed->setChecked(settings->value("cachedMemoryIsUsed", false).toBool());
 
+    QCheckBox* smoothGraphs = this->findChild<QCheckBox*>("smoothGraphs");
+    connect(smoothGraphs,SIGNAL(clicked(bool)),this,SLOT(toggleSmoothGraphsCheckbox(bool)));
+    smoothGraphs->setChecked(settings->value("smoothGraphs", false).toBool());
 }
 
 PreferencesDialogue::~PreferencesDialogue()
@@ -166,4 +169,9 @@ void PreferencesDialogue::toggleResourcesBackgroundCheckbox(bool checked)
 void PreferencesDialogue::toggleCachedIsUsedCheckbox(bool checked)
 {
     settings->setValue("cachedMemoryIsUsed", checked);
+}
+
+void PreferencesDialogue::toggleSmoothGraphsCheckbox(bool checked)
+{
+    settings->setValue("smoothGraphs", checked);
 }

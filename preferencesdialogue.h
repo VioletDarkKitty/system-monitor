@@ -45,6 +45,7 @@ public slots:
     void toggleProcessCheckbox(QWidget* checkbox);
     void toggleResourcesBackgroundCheckbox(bool checked);
     void toggleCachedIsUsedCheckbox(bool checked);
+    void toggleSmoothGraphsCheckbox(bool checked);
 
 private:
     Ui::PreferencesDialogue *ui;

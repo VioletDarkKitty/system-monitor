@@ -90,7 +90,8 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
     }
 
     // check if using spline
-    qcustomplotCpuVector splineValues;
+    QVector<QVector<double>> splineValues;
+    QVector<QVector<double>> splineXValues;
     bool smooth = settings->value("smoothGraphs", false).toBool();
     if (smooth) {
         // redo all point positions for y using cSpline
@@ -103,12 +104,14 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
                 std::cerr << "Spline error [cpu] " << spline.IsError() << std::endl;
             }
 
-            QVector<double> splineY;
-            for(int j=0; j<x.size(); j++) {
-                splineY.push_back(spline.getY(j));
-            }
+            QVector<double> splineY, splineX;
+            spline.Draw([&splineY, &splineX](double xval, double yval) mutable {
+                splineY.append(yval);
+                splineX.append(xval);
+            },x.length()*5);
 
             splineValues.push_back(splineY);
+            splineXValues.push_back(splineX);
         }
 
         values = &splineValues;
@@ -125,6 +128,9 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
             cpuPlot->graph(i)->data()->clear();
             cpuPlot->graph(i)->setPen(QPen(QColor(colourNames[i % colourNamesLen])));
         }
+        if (smooth) {
+            x = splineXValues[0];
+        }
         cpuPlot->graph(i)->setData(x, values->at(i));
 
         if (settings->value("draw cpu area stacked",false).toBool()) {
@@ -135,10 +141,11 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
     }
     previouslyPlotted = true;
 
-    //customPlot->xAxis->setLabel("x");
-    //customPlot->yAxis->setLabel("y");
-
-    cpuPlot->xAxis->setRange(0, 60);
+    if (smooth) {
+        cpuPlot->xAxis->setRange(0, x.last() + 1);
+    } else {
+        cpuPlot->xAxis->setRange(0, values->at(0).size());
+    }
     cpuPlot->yAxis->setRange(0, 100);
     cpuPlot->replot();
 }

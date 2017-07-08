@@ -267,6 +267,15 @@ std::string memoryConverter::to_string()
 }
 
 /**
+ * @brief memoryConverter::getUnitAsString Convert the unit to the standard specific representation and return it as a string
+ * @return A string for the unit represented in the standard that the memory converter is using
+ */
+std::string memoryConverter::getUnitAsString()
+{
+    return getStandardUnit(this->standard, this->unit);
+}
+
+/**
  * @brief memoryConverter::operator std::string @see to_string
  */
 memoryConverter::operator std::string()

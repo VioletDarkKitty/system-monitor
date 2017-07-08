@@ -243,6 +243,7 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
         networkPlot->xAxis->setRange(0, plotting->at(0).size());
     }
     networkPlot->yAxis->setRange(0, scaler.getValue() + 1);
+    networkPlot->yAxis->setLabel(QString::fromStdString(scaler.getUnitAsString()));
     networkPlot->replot();
 }
 

@@ -219,7 +219,7 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
             spline.Draw([&splineY, &splineX](double xval, double yval) mutable {
                 splineY.append(yval);
                 splineX.append(xval);
-            },x.length()*2);
+            },x.length()*5);
 
             splineValues.push_back(splineY);
             splineXValues.push_back(splineX);
@@ -237,7 +237,11 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
         networkPlot->graph(i)->setData(x, plotting->at(i));
     }
 
-    networkPlot->xAxis->setRange(0, plotting->at(0).size());
+    if (smooth) {
+        networkPlot->xAxis->setRange(0, x.last() + 1);
+    } else {
+        networkPlot->xAxis->setRange(0, plotting->at(0).size());
+    }
     networkPlot->yAxis->setRange(0, scaler.getValue() + 1);
     networkPlot->replot();
 }

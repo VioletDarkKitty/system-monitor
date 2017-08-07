@@ -123,13 +123,14 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
         for(int j=0; j<values.at(i).size(); j++) {
             switch(i) {
                 case 0:
-                if (sendingMax == nullptr || (*sendingMax) < values.at(i).at(j)) {
-                    sendingMax = &(values.at(i).at(j));
-                }
-                break;
-                case 1:
                 if (recievingMax == nullptr || (*recievingMax) < values.at(i).at(j)) {
                     recievingMax = &(values.at(i).at(j));
+                }
+                break;
+
+                case 1:
+                if (sendingMax == nullptr || (*sendingMax) < values.at(i).at(j)) {
+                    sendingMax = &(values.at(i).at(j));
                 }
                 break;
             }
@@ -137,9 +138,11 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
     }
 
     // scale values to the same unit and then plot
-    memoryConverter scaler = *sendingMax;
-    if (sendingMax < recievingMax) {
+    memoryConverter scaler;
+    if ((*sendingMax) < (*recievingMax)) {
         scaler = *recievingMax;
+    } else {
+        scaler = *sendingMax;
     }
 
     QVector<QVector<double>> scaled;

@@ -22,6 +22,7 @@
 #include <QTableWidget>
 #include <QSettings>
 #include "memoryconverter.h"
+#include <chrono>
 
 class fileSystemWorker : public QObject, public workerThread
 {
@@ -50,7 +51,8 @@ private:
         double io;
         unsigned long long ioms;
     };
-    unsigned long long timeSinceLastIOCheck;
+    std::chrono::milliseconds::rep timeSinceLastIOCheck;
+    std::chrono::nanoseconds lastEpochCount;
     std::vector<disk> oldDisks;
     std::vector<disk> readMtabDisks();
     void fillDiskStructures(std::vector<disk> &disks);

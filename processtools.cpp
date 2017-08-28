@@ -144,7 +144,7 @@ namespace processTools {
         QString name = QFileInfo(QString::fromStdString(args[0])).fileName();
         // replace the name of some processes with their first argument, eg, python, php, ruby etc
         // QString does not support hash
-        static std::unordered_set<QString> nameMap({"python", "python3", "ruby", "php", "perl"});
+        static std::unordered_set<QString> nameMap({"python", "python2", "python3", "ruby", "php", "perl"});
         auto pos = nameMap.find(name);
         if (pos != nameMap.end()) {
             return QFileInfo(QString::fromStdString(args[1])).fileName();
@@ -287,6 +287,14 @@ namespace processTools {
 
             case 'Z':
                 return "Zombie";
+            break;
+
+            case 'D':
+                return "Uninterruptible Sleep";
+            break;
+
+            case 'T':
+                return "Stopped";
             break;
 
             default:

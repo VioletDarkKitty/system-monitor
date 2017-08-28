@@ -167,7 +167,6 @@ void fileSystemWorker::fillDiskStructures(std::vector<disk> &disks)
 
             if (oldDisks.size() > 0) {
                 disks[i].ioms = parts[9];
-                std::cout << i << ": " << parts[9] << "\t" << timeSinceLastIOCheck<< std::endl;
                 disks[i].io = 100.0L * (parts[9]-oldDisks[i].ioms) / timeSinceLastIOCheck;
                 if (disks[i].io > 100) {
                     disks[i].io = 100;

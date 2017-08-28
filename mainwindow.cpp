@@ -119,7 +119,7 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
 
     #define colourNamesLen 4
     const QString colourNames[] = {
-        "yellow","red","green","blue"
+        "orange","red","green","blue"
     };
     for(int i=0; i<size; i++) {
         if (!previouslyPlotted) {

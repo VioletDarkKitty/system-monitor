@@ -47,10 +47,10 @@ private:
         memoryConverter *totalSize;
         memoryConverter *usedSize;
         int usedPercentage;
-        float io;
-        long ioms;
+        double io;
+        unsigned long long ioms;
     };
-    float timeSinceLastIOCheck;
+    unsigned long long timeSinceLastIOCheck;
     std::vector<disk> oldDisks;
     std::vector<disk> readMtabDisks();
     void fillDiskStructures(std::vector<disk> &disks);

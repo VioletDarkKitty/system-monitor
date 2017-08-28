@@ -152,7 +152,7 @@ void fileSystemWorker::fillDiskStructures(std::vector<disk> &disks)
 
             if (oldDisks.size() > 0) {
                 disks[i].ioms = parts[9];
-                disks[i].io = round(100 * (parts[9]-oldDisks[i].ioms) / timeSinceLastIOCheck);
+                disks[i].io = 100.0L * (parts[9]-oldDisks[i].ioms) / timeSinceLastIOCheck;
                 if (disks[i].io > 100) {
                     disks[i].io = 100;
                 }
@@ -174,7 +174,7 @@ void fileSystemWorker::updateTable()
 {
     timespec ts;
     clock_gettime(CLOCK_MONOTONIC,&ts);
-    timeSinceLastIOCheck = ts.tv_sec*1000 - timeSinceLastIOCheck;
+    timeSinceLastIOCheck = ((double)ts.tv_nsec*0.000001L) - timeSinceLastIOCheck;
 
     std::vector<disk> disks = readMtabDisks();
 

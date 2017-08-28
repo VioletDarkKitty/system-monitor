@@ -40,6 +40,7 @@ fileSystemWorker::fileSystemWorker(QObject *parent, QSettings *settings)
 
     createFilesystemView();
     timeSinceLastIOCheck = 0;
+    lastEpochCount = std::chrono::system_clock::now().time_since_epoch();
 
     this->settings = settings;
 }
@@ -167,13 +168,15 @@ void fileSystemWorker::fillDiskStructures(std::vector<disk> &disks)
 
             if (oldDisks.size() > 0) {
                 disks[i].ioms = parts[9];
-                disks[i].io = 100.0L * (parts[9]-oldDisks[i].ioms) / timeSinceLastIOCheck;
-                if (disks[i].io > 100) {
+                if (timeSinceLastIOCheck > 0) {
+                    disks[i].io = 100.0L * (parts[9]-oldDisks[i].ioms) / timeSinceLastIOCheck;
+                }
+                /*if (disks[i].io > 100) {
                     disks[i].io = 100;
                 }
                 if (disks[i].io < 0) {
                     disks[i].io = 0;
-                }
+                }*/
             } else {
                 disks[i].io = 0;
                 disks[i].ioms = parts[9];
@@ -187,9 +190,9 @@ void fileSystemWorker::fillDiskStructures(std::vector<disk> &disks)
  */
 void fileSystemWorker::updateTable()
 {
-    timespec ts;
-    clock_gettime(CLOCK_MONOTONIC,&ts);
-    timeSinceLastIOCheck = ((double)ts.tv_nsec/1000000) - timeSinceLastIOCheck;
+    timeSinceLastIOCheck = std::chrono::duration_cast<std::chrono::milliseconds>(
+                       std::chrono::system_clock::now().time_since_epoch() - lastEpochCount).count();
+    lastEpochCount = std::chrono::system_clock::now().time_since_epoch();
 
     std::vector<disk> disks = readMtabDisks();
 
@@ -236,6 +239,7 @@ void fileSystemWorker::loop()
 {
     standard = memoryConverter::stringToStandard(settings->value("unit prefix standards", JEDEC).toString().toStdString());
     emit(updateTableData());
+
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 

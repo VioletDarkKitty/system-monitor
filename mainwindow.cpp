@@ -19,6 +19,8 @@
 #include "ui_mainwindow.h"
 #include "aboutdialogue.h"
 #include "preferencesdialogue.h"
+#include "cSpline.h"
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -71,7 +73,7 @@ MainWindow::~MainWindow()
     delete settings;
 }
 
-void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &values)
+void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
 {
     QVector<double> x(60); // initialize with entries 60..0
     for (int i=59; i>0; --i)
@@ -79,10 +81,40 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &values)
       x[i] = i;
     }
 
+    const qcustomplotCpuVector *values = &input;
+
     static bool previouslyPlotted = false;
-    int size = values.count();//values->size();
+    int size = values->count();//values->size();
     if (size == 0) {
         return;
+    }
+
+    // check if using spline
+    QVector<QVector<double>> splineValues;
+    QVector<QVector<double>> splineXValues;
+    bool smooth = settings->value("smoothGraphs", false).toBool();
+    if (smooth) {
+        // redo all point positions for y using cSpline
+        for(int i=0; i<size; i++) {
+            std::vector<double> origX = x.toStdVector();
+            std::vector<double> origY = values->at(i).toStdVector();
+            raven::cSpline spline(origX,origY);
+
+            if(spline.IsError()!=raven::cSpline::e_error::no_error) {
+                std::cerr << "Spline error [cpu] " << spline.IsError() << std::endl;
+            }
+
+            QVector<double> splineY, splineX;
+            spline.Draw([&splineY, &splineX](double xval, double yval) mutable {
+                splineY.append(yval);
+                splineX.append(xval);
+            },x.length()*5);
+
+            splineValues.push_back(splineY);
+            splineXValues.push_back(splineX);
+        }
+
+        values = &splineValues;
     }
 
     #define colourNamesLen 4
@@ -96,7 +128,10 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &values)
             cpuPlot->graph(i)->data()->clear();
             cpuPlot->graph(i)->setPen(QPen(QColor(colourNames[i % colourNamesLen])));
         }
-        cpuPlot->graph(i)->setData(x, values.at(i));
+        if (smooth) {
+            x = splineXValues[0];
+        }
+        cpuPlot->graph(i)->setData(x, values->at(i));
 
         if (settings->value("draw cpu area stacked",false).toBool()) {
             cpuPlot->graph(i)->setBrush(QBrush(QColor(colourNames[i % colourNamesLen])));
@@ -106,10 +141,11 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &values)
     }
     previouslyPlotted = true;
 
-    //customPlot->xAxis->setLabel("x");
-    //customPlot->yAxis->setLabel("y");
-
-    cpuPlot->xAxis->setRange(0, 60);
+    if (smooth) {
+        cpuPlot->xAxis->setRange(0, x.last() + 1);
+    } else {
+        cpuPlot->xAxis->setRange(0, values->at(0).size());
+    }
     cpuPlot->yAxis->setRange(0, 100);
     cpuPlot->replot();
 }
@@ -145,7 +181,7 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
         scaler = *sendingMax;
     }
 
-    QVector<QVector<double>> scaled;
+    QVector<QVector<double>> scaled, *plotting = &scaled;
 
     for(unsigned int i=0; i<2; i++) {
         QVector<double> scaledValuesTemp;
@@ -167,14 +203,55 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
         "blue", "red"
     };
 
+    // check if using spline
+    QVector<QVector<double>> splineValues;
+    QVector<QVector<double>> splineXValues;
+    bool smooth = settings->value("smoothGraphs", false).toBool();
+    if (smooth) {
+        // redo all point positions for y using cSpline
+        for(int i=0; i<2; i++) {
+            if (scaled.at(i).empty()) {
+                continue;
+            }
+
+            std::vector<double> origX = x.toStdVector();
+            std::vector<double> origY = scaled.at(i).toStdVector();
+            raven::cSpline spline(origX,origY);
+
+            if(spline.IsError()!=raven::cSpline::e_error::no_error) {
+                std::cerr << "Spline error [network] " << spline.IsError() << std::endl;
+            }
+
+            QVector<double> splineY, splineX;
+
+            spline.Draw([&splineY, &splineX](double xval, double yval) mutable {
+                splineY.append(yval);
+                splineX.append(xval);
+            },x.length()*5);
+
+            splineValues.push_back(splineY);
+            splineXValues.push_back(splineX);
+        }
+
+        plotting = &splineValues;
+    }
+
     for(unsigned int i=0; i<2; i++) {
         networkPlot->addGraph();
         networkPlot->graph(i)->setPen(QPen(QColor(colours[i])));
-        networkPlot->graph(i)->setData(x, scaled.at(i));
+        if (smooth) {
+            x = splineXValues[0];
+        }
+        networkPlot->graph(i)->setData(x, plotting->at(i));
     }
 
-    networkPlot->xAxis->setRange(0, 60);
+    if (smooth) {
+        networkPlot->xAxis->setRange(0, x.last() + 1);
+    } else {
+        networkPlot->xAxis->setRange(0, plotting->at(0).size());
+    }
     networkPlot->yAxis->setRange(0, scaler.getValue() + 1);
+    networkPlot->yAxis->setLabel(QString::fromStdString(scaler.getUnitAsString()));
     networkPlot->replot();
 }
 

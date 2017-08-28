@@ -55,6 +55,7 @@ public:
     static std::string dbl2str(double d);
     double getValue() const;
     memoryUnit getUnit() const;
+    std::string getUnitAsString();
     unitStandard getStandard() const;
     std::string to_string();
 

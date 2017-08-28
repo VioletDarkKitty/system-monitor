@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <QFileInfo>
 #include <cmath>
+#include <locale>
 
 fileSystemWorker::fileSystemWorker(QObject *parent, QSettings *settings)
     : QObject(parent), workerThread()
@@ -146,13 +147,28 @@ void fileSystemWorker::fillDiskStructures(std::vector<disk> &disks)
         QFile stat("/sys/block/"+(parent==""? "":parent+"/")+name+"/stat");
         if (stat.open(QFile::ReadOnly)) {
             QString s = stat.readLine();
-            for (int i = 0; i < s.size(); i += NUMBER_OF_CHARS_PER_COL_IOSTAT) {
-                parts.push_back(QString(QString::fromStdString(s.toStdString().substr(i, NUMBER_OF_CHARS_PER_COL_IOSTAT))).toLong());
+            std::locale loc;
+            for (int i = 0; i < s.size(); i++) {
+                if (std::isspace(s.at(i).toLatin1(), loc)) {
+                    continue;
+                }
+
+                QString buf;
+                for (int j = i; j < s.size(); j++, i++) {
+                    if (std::isspace(s.at(j).toLatin1(), loc)) {
+                        break;
+                    }
+
+                    buf += s.at(j);
+                }
+
+                parts.push_back(buf.toLong());
             }
 
             if (oldDisks.size() > 0) {
                 disks[i].ioms = parts[9];
-                disks[i].io = round(100 * (parts[9]-oldDisks[i].ioms) / timeSinceLastIOCheck);
+                std::cout << i << ": " << parts[9] << "\t" << timeSinceLastIOCheck<< std::endl;
+                disks[i].io = 100.0L * (parts[9]-oldDisks[i].ioms) / timeSinceLastIOCheck;
                 if (disks[i].io > 100) {
                     disks[i].io = 100;
                 }
@@ -174,7 +190,7 @@ void fileSystemWorker::updateTable()
 {
     timespec ts;
     clock_gettime(CLOCK_MONOTONIC,&ts);
-    timeSinceLastIOCheck = ts.tv_sec*1000 - timeSinceLastIOCheck;
+    timeSinceLastIOCheck = ((double)ts.tv_nsec/1000000) - timeSinceLastIOCheck;
 
     std::vector<disk> disks = readMtabDisks();
 

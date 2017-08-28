@@ -45,7 +45,8 @@ SOURCES += main.cpp\
     cputools.cpp \
     preferencesdialogue.cpp \
     memoryconverter.cpp \
-    cSpline.cpp
+    cSpline.cpp \
+    colourhelper.cpp
 
 HEADERS  += mainwindow.h \
     processinformationworker.h \
@@ -62,7 +63,8 @@ HEADERS  += mainwindow.h \
     preferencesdialogue.h \
     hashqstring.h \
     memoryconverter.h \
-    cSpline.h
+    cSpline.h \
+    colourhelper.h
 
 FORMS    += mainwindow.ui \
     processpropertiesdialogue.ui \

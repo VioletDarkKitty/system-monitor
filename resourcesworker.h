@@ -28,15 +28,25 @@
 #include <deque>
 #include <QSettings>
 #include "memoryconverter.h"
+#include <QHash>
 
 typedef QVector<QVector<double>> qcustomplotCpuVector;
 typedef QVector<QVector<memoryConverter>> qcustomplotNetworkVector;
+
+// qhash wont take an array as a value for some reason, ptr not working
+struct struct__intArrayHolder {
+    int array[3];
+};
 
 class resourcesWorker : public QObject, public workerThread
 {
     Q_OBJECT
 public:
     explicit resourcesWorker(QObject *parent, QSettings *settings);
+    const QHash<QString, struct__intArrayHolder> getColourDefaults() {
+        return defaultColours;
+    }
+
     ~resourcesWorker();
 signals:
     void updateMemoryBar(int value);
@@ -62,6 +72,10 @@ private:
     unitStandard standard;
     QLabel *networkRecievingLabel, *networkRecievingTotalLabel, *networkSendingLabel, *networkSendingTotalLabel;
     void updateNetwork();
+    QPushButton *networkRecievingColourButton, *networkSendingColourButton;
+    QHash<QString, struct__intArrayHolder> defaultColours;
+private slots:
+    void createColourDialogue();
 };
 
 #endif // RESOURCESWORKER_H

@@ -22,7 +22,9 @@
 #include "cputools.h"
 #include "memoryconverter.h"
 #include <ctime>
+#include "colourhelper.h"
 using namespace cpuTools;
+using namespace colourHelper;
 
 resourcesWorker::resourcesWorker(QObject *parent, QSettings *settings)
     : QObject(parent), workerThread()
@@ -34,8 +36,10 @@ resourcesWorker::resourcesWorker(QObject *parent, QSettings *settings)
 
     networkRecievingLabel = parent->findChild<QLabel*>("networkRecievingLabel");
     networkRecievingTotalLabel = parent->findChild<QLabel*>("networkTotalRecievedLabel");
+    networkRecievingColourButton = parent->findChild<QPushButton*>("networkRecievingColourButton");
     networkSendingLabel = parent->findChild<QLabel*>("networkSendingLabel");
     networkSendingTotalLabel = parent->findChild<QLabel*>("networkTotalSentLabel");
+    networkSendingColourButton = parent->findChild<QPushButton*>("networkSendingColourButton");
 
     connect(this,SIGNAL(updateMemoryBar(int)),memoryBar,SLOT(setValue(int)));
     connect(this,SIGNAL(updateMemoryText(QString)),memoryLabel,SLOT(setText(QString)));
@@ -44,8 +48,20 @@ resourcesWorker::resourcesWorker(QObject *parent, QSettings *settings)
 
     connect(this,SIGNAL(updateNetworkRecieving(QString)),networkRecievingLabel,SLOT(setText(QString)));
     connect(this,SIGNAL(updateNetworkRecievingTotal(QString)),networkRecievingTotalLabel,SLOT(setText(QString)));
+    connect(networkRecievingColourButton, SIGNAL(clicked(bool)), this, SLOT(createColourDialogue()), Qt::UniqueConnection);
     connect(this,SIGNAL(updateNetworkSending(QString)),networkSendingLabel,SLOT(setText(QString)));
     connect(this,SIGNAL(updateNetworkSendingTotal(QString)),networkSendingTotalLabel,SLOT(setText(QString)));
+    connect(networkSendingColourButton, SIGNAL(clicked(bool)), this, SLOT(createColourDialogue()), Qt::UniqueConnection);
+
+    /// TODO: this is horrible
+    struct__intArrayHolder defaultRecieving;
+    memset(&defaultRecieving, 0, sizeof(struct__intArrayHolder));
+    defaultRecieving.array[2] = 255;
+    struct__intArrayHolder defaultSending;
+    memset(&defaultSending, 0, sizeof(struct__intArrayHolder));
+    defaultSending.array[0] = 255;
+    defaultColours[networkRecievingColourButton->objectName()] = defaultRecieving;
+    defaultColours[networkSendingColourButton->objectName()] = defaultSending;
 
     this->settings = settings;
 }
@@ -102,6 +118,14 @@ void resourcesWorker::updateCpu()
     }
 
     emit(updateCpuPlotSIG(plottingData));
+}
+
+void resourcesWorker::createColourDialogue()
+{
+    QColor defaultColour = colourHelper::createColourFromSettings(settings, sender()->objectName(), defaultColours[sender()->objectName()].array);
+    QColorDialog colourDialogue(defaultColour);
+    colourDialogue.show();
+    colourHelper::saveColourToSettings(settings, sender()->objectName(), colourDialogue.getColor(defaultColour));
 }
 
 /**
@@ -237,6 +261,16 @@ void resourcesWorker::updateNetwork()
 
     lastSentBytes = totalSentBytes;
     lastRecievedBytes = totalRecievedBytes;
+
+    QPixmap recievingColour = QPixmap(networkRecievingColourButton->width(), networkRecievingColourButton->height());
+    recievingColour.fill(createColourFromSettings(settings, networkRecievingColourButton->objectName(),
+                                                  defaultColours[networkRecievingColourButton->objectName()].array));
+    networkRecievingColourButton->setIcon(QIcon(recievingColour));
+
+    QPixmap sendingColour = QPixmap(networkSendingColourButton->width(), networkSendingColourButton->height());
+    sendingColour.fill(createColourFromSettings(settings, networkSendingColourButton->objectName(),
+                                                defaultColours[networkSendingColourButton->objectName()].array));
+    networkSendingColourButton->setIcon(QIcon(sendingColour));
 }
 
 /**

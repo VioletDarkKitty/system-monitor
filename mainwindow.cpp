@@ -21,6 +21,7 @@
 #include "preferencesdialogue.h"
 #include "cSpline.h"
 #include <iostream>
+#include "colourhelper.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -199,10 +200,6 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
       x[i] = i;
     }
 
-    const QString colours[] = {
-        "blue", "red"
-    };
-
     // check if using spline
     QVector<QVector<double>> splineValues;
     QVector<QVector<double>> splineXValues;
@@ -236,9 +233,14 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
         plotting = &splineValues;
     }
 
+    QString colours[] = {
+        "networkRecievingColourButton",
+        "networkSendingColourButton"
+    };
     for(unsigned int i=0; i<2; i++) {
         networkPlot->addGraph();
-        networkPlot->graph(i)->setPen(QPen(QColor(colours[i])));
+        networkPlot->graph(i)->setPen(QPen(colourHelper::createColourFromSettings(settings, colours[i],
+                                                                                  resourcesThread->getColourDefaults()[colours[i]].array)));
         if (smooth) {
             x = splineXValues[0];
         }

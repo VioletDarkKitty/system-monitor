@@ -123,9 +123,10 @@ void resourcesWorker::updateCpu()
 void resourcesWorker::createColourDialogue()
 {
     QColor defaultColour = colourHelper::createColourFromSettings(settings, sender()->objectName(), defaultColours[sender()->objectName()].array);
-    QColorDialog colourDialogue(defaultColour);
-    colourDialogue.show();
-    colourHelper::saveColourToSettings(settings, sender()->objectName(), colourDialogue.getColor(defaultColour));
+    QColor newColour = QColorDialog::getColor(defaultColour, (QWidget*) this->parent());
+    if (newColour.isValid()) {
+        colourHelper::saveColourToSettings(settings, sender()->objectName(), newColour);
+    }
 }
 
 /**

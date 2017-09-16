@@ -74,7 +74,7 @@ private:
     void updateNetwork();
     QPushButton *networkRecievingColourButton, *networkSendingColourButton;
     QHash<QString, struct__intArrayHolder> defaultColours;
-private slots:
+public slots:
     void createColourDialogue();
 };
 

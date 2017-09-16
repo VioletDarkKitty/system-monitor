@@ -56,6 +56,9 @@ private:
     QAction *quitAction, *aboutAction, *preferencesAction;
     QCustomPlot *cpuPlot, *networkPlot;
     QSettings *settings;
+    QGridLayout *cpuInfoArea;
+    void updateCpuAreaInfo(const QVector<double> &input);
+    QHash<QString, struct__intArrayHolder> defaultCpuColours; /// TODO: use qcolor?
 };
 
 #endif // MAINWINDOW_H

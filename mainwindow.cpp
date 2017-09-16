@@ -22,6 +22,7 @@
 #include "cSpline.h"
 #include <iostream>
 #include "colourhelper.h"
+using namespace colourHelper;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -55,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
     cpuPlot = reinterpret_cast<QCustomPlot*>(ui->tabResources->findChild<QWidget*>("cpuPlot"));
     connect(resourcesThread,SIGNAL(updateCpuPlotSIG(const qcustomplotCpuVector&)),
             this,SLOT(updateCpuPlotSLO(const qcustomplotCpuVector&)));
+    cpuInfoArea = ui->tabResources->findChild<QGridLayout*>("cpuInfoArea");
 
     qRegisterMetaType<qcustomplotNetworkVector>("qcustomplotNetworkVector");
     networkPlot = reinterpret_cast<QCustomPlot*>(ui->tabResources->findChild<QWidget*>("networkPlot"));
@@ -72,6 +74,57 @@ MainWindow::~MainWindow()
     delete filesystemThread;
     delete mainTabs;
     delete settings;
+}
+
+void MainWindow::updateCpuAreaInfo(const QVector<double> &input)
+{
+    static QVector<QLabel*> cpuLabels;
+    static QVector<QPushButton*> cpuColourButtons;
+    #define colourNamesLen 4
+    static const QString colourNames[] = {
+        "orange","red","green","blue"
+    };
+
+    if (cpuInfoArea->count() == 0) {
+        for(int i=0; i<input.size(); i++) {
+            QLabel *cpuLabel = new QLabel(QString::number(input.at(i)));
+            cpuLabels.append(cpuLabel);
+
+            QPushButton *cpuColourButton = new QPushButton();
+            cpuColourButton->setFlat(true);
+            cpuColourButton->setObjectName("CPU" + QString::number(i+1));
+            cpuColourButtons.append(cpuColourButton);
+            /// TODO: dangarous, across thread and parent may not be correct, move to another object. See below todo
+            connect(cpuColourButton, SIGNAL(clicked(bool)), this->resourcesThread, SLOT(createColourDialogue()), Qt::UniqueConnection);
+
+            QHBoxLayout *cpuLayout = new QHBoxLayout();
+            cpuLayout->addWidget(cpuColourButton);
+            cpuLayout->addWidget(cpuLabel);
+
+            cpuInfoArea->addLayout(cpuLayout, i / 4, i % 4);
+            cpuInfoArea->setAlignment(cpuLayout, Qt::AlignHCenter);
+
+            /// TODO: horrible, make a class. Duplicated in resourcesworker
+            QColor colour = QColor(colourNames[i % colourNamesLen]);
+            colour = colour.toRgb();
+            struct__intArrayHolder rgbColor;
+            rgbColor.array[0] = colour.red();
+            rgbColor.array[1] = colour.green();
+            rgbColor.array[2] = colour.blue();
+            this->defaultCpuColours["CPU" + QString::number(i+1)] = rgbColor;
+        }
+        return;
+    }
+
+    for(int i=0; i<cpuLabels.size(); i++) {
+        cpuLabels[i]->setText("CPU" + QString::number(i+1) + " "
+                                + QString::number(memoryConverter::roundDouble(input[i], 1)) + "%");
+
+        QPixmap cpuColour = QPixmap(cpuColourButtons[i]->width(), cpuColourButtons[i]->height());
+        cpuColour.fill(createColourFromSettings(settings, cpuColourButtons[i]->objectName(),
+                                                      this->defaultCpuColours[cpuColourButtons[i]->objectName()].array));
+        cpuColourButtons[i]->setIcon(QIcon(cpuColour));
+    }
 }
 
 void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
@@ -118,16 +171,22 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
         values = &splineValues;
     }
 
-    #define colourNamesLen 4
-    const QString colourNames[] = {
-        "orange","red","green","blue"
-    };
+    QVector<double> lastValues;
     for(int i=0; i<size; i++) {
+        lastValues.append(values->at(i).last());
+    }
+    updateCpuAreaInfo(lastValues);
+
+
+    for(int i=0; i<size; i++) {
+        QString colName = "CPU" + QString::number(i+1);
+        QColor cpuColour = createColourFromSettings(settings, colName, this->defaultCpuColours[colName].array);
+
         if (!previouslyPlotted) {
             cpuPlot->addGraph();
         } else {
             cpuPlot->graph(i)->data()->clear();
-            cpuPlot->graph(i)->setPen(QPen(QColor(colourNames[i % colourNamesLen])));
+            cpuPlot->graph(i)->setPen(QPen(QColor(cpuColour)));
         }
         if (smooth) {
             x = splineXValues[0];
@@ -135,7 +194,7 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
         cpuPlot->graph(i)->setData(x, values->at(i));
 
         if (settings->value("draw cpu area stacked",false).toBool()) {
-            cpuPlot->graph(i)->setBrush(QBrush(QColor(colourNames[i % colourNamesLen])));
+            cpuPlot->graph(i)->setBrush(QBrush(cpuColour));
         } else {
             cpuPlot->graph(i)->setBrush(QBrush());
         }

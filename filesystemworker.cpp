@@ -145,7 +145,11 @@ void fileSystemWorker::fillDiskStructures(std::vector<disk> &disks)
             parent = "";
         }
 
-        #define NUMBER_OF_CHARS_PER_COL_IOSTAT 9
+        if (parent == name) {
+            // this is actually a full disk partition, ignore the parent
+            parent = "";
+        }
+
         std::vector<long> parts;
         QFile stat("/sys/block/"+(parent==""? "":parent+"/")+name+"/stat");
         if (stat.open(QFile::ReadOnly)) {

@@ -45,7 +45,6 @@ SOURCES += main.cpp\
     cputools.cpp \
     preferencesdialogue.cpp \
     memoryconverter.cpp \
-    cSpline.cpp \
     colourhelper.cpp
 
 HEADERS  += mainwindow.h \
@@ -63,15 +62,15 @@ HEADERS  += mainwindow.h \
     preferencesdialogue.h \
     hashqstring.h \
     memoryconverter.h \
-    cSpline.h \
-    colourhelper.h
+    colourhelper.h \
+    splinefunction.h
 
 FORMS    += mainwindow.ui \
     processpropertiesdialogue.ui \
     aboutdialogue.ui \
     preferencesdialogue.ui
 
-QMAKE_CXXFLAGS += -std=c++14 -Wall
+QMAKE_CXXFLAGS += -std=c++14 -Wall $$system(pkg-config --cflags eigen3)
 LIBS += -L"libprocps" -lprocps -lstdc++fs
 
 DISTFILES += \

@@ -25,6 +25,7 @@
 #include <QAction>
 #include "qcustomplot.h"
 #include <QSettings>
+#include <utility>
 
 namespace Ui {
 class MainWindow;
@@ -59,6 +60,7 @@ private:
     QGridLayout *cpuInfoArea;
     void updateCpuAreaInfo(const QVector<double> &input);
     QHash<QString, struct__intArrayHolder> defaultCpuColours; /// TODO: use qcolor?
+    QPair<QVector<QVector<double>>, QVector<QVector<double>>> generateSpline(QString name, QVector<double> &x, const QVector<QVector<double>> &y);
 };
 
 #endif // MAINWINDOW_H

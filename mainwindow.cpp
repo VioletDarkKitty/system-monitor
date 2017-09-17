@@ -19,10 +19,11 @@
 #include "ui_mainwindow.h"
 #include "aboutdialogue.h"
 #include "preferencesdialogue.h"
-#include "cSpline.h"
 #include <iostream>
 #include "colourhelper.h"
 using namespace colourHelper;
+#include "splinefunction.h"
+#include <Eigen/Core>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -127,6 +128,67 @@ void MainWindow::updateCpuAreaInfo(const QVector<double> &input)
     }
 }
 
+QPair<QVector<QVector<double>>, qcustomplotCpuVector> MainWindow::generateSpline(QString name, QVector<double> &x, const QVector<QVector<double>> &y)
+{
+    //static QHash<QString, QVector<QVector<double>>> interpolationCache;
+
+    if (!y.empty() && y.at(0).size() < 5) {
+        QVector<QVector<double>> blankHolder = QVector<QVector<double>>();
+        return QPair<QVector<QVector<double>>, qcustomplotCpuVector>(blankHolder, blankHolder);
+    }
+
+    /// TODO: cache these
+    double len = x.size();
+    /*if (!interpolationCache.contains(name)) {
+        // prep data
+        QVector<QVector<double>> data;
+        for(int i=0; i<y.size(); i++) {
+            QVector<double> data2;
+            for(double j=0; j<len-2; j+=(3.0L / len)) {
+                data2.append(0);
+            }
+            data.append(data2);
+        }
+        interpolationCache[name] = data;
+    }*/
+
+    QVector<QVector<double>> splineValues;
+    QVector<QVector<double>> splineXValues;
+    for(int i=0; i<y.size(); i++) {
+
+        Eigen::VectorXd origX = Eigen::VectorXd::Map(x.data(), x.size());
+        Eigen::VectorXd origY = Eigen::VectorXd::Map(y.at(i).data(), y.at(i).size());
+
+        SplineFunction spline(origX, origY);
+
+        QVector<double> splineY, splineX;
+
+        for(double xVal=0; xVal<len-2; xVal+=(3.0L / len)) {
+            splineX.append(xVal);
+
+            /*if (xVal < len-10) {
+                double value = interpolationCache[name].at(i).at(xVal);
+                splineY.append(value);
+                continue;
+            }*/
+
+            double value = spline(xVal);
+            if (value > 100) {
+                value = 100;
+            }
+            splineY.append(value);
+            /*interpolationCache[name][i].pop_front();
+            interpolationCache[name][i].push_back(value);*/
+        }
+
+        splineValues.push_back(splineY);
+        splineXValues.push_back(splineX);
+
+    }
+
+    return QPair<QVector<QVector<double>>, qcustomplotCpuVector>(splineXValues, splineValues);
+}
+
 void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
 {
     QVector<double> x(60); // initialize with entries 60..0
@@ -143,37 +205,22 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
         return;
     }
 
-    // check if using spline
-    QVector<QVector<double>> splineValues;
     QVector<QVector<double>> splineXValues;
     bool smooth = settings->value("smoothGraphs", false).toBool();
-    if (smooth) {
-        // redo all point positions for y using cSpline
-        for(int i=0; i<size; i++) {
-            std::vector<double> origX = x.toStdVector();
-            std::vector<double> origY = values->at(i).toStdVector();
-            raven::cSpline spline(origX,origY);
-
-            if(spline.IsError()!=raven::cSpline::e_error::no_error) {
-                std::cerr << "Spline error [cpu] " << spline.IsError() << std::endl;
-            }
-
-            QVector<double> splineY, splineX;
-            spline.Draw([&splineY, &splineX](double xval, double yval) mutable {
-                splineY.append(yval);
-                splineX.append(xval);
-            },x.length()*5);
-
-            splineValues.push_back(splineY);
-            splineXValues.push_back(splineX);
+    QPair<QVector<QVector<double>>, qcustomplotCpuVector> data;
+    if(smooth) {
+        data = generateSpline("cpu", x, *values);
+        if (!data.second.empty() && !data.second.at(0).empty()) {
+            values = &data.second;
+            x = data.first.at(0);
         }
-
-        values = &splineValues;
+        splineXValues = data.first;
     }
 
     QVector<double> lastValues;
     for(int i=0; i<size; i++) {
-        lastValues.append(values->at(i).last());
+        // do not show the interpolated values as the actual cpu%
+        lastValues.append(input.at(i).last());
     }
     updateCpuAreaInfo(lastValues);
 
@@ -188,9 +235,7 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
             cpuPlot->graph(i)->data()->clear();
             cpuPlot->graph(i)->setPen(QPen(QColor(cpuColour)));
         }
-        if (smooth) {
-            x = splineXValues[0];
-        }
+
         cpuPlot->graph(i)->setData(x, values->at(i));
 
         if (settings->value("draw cpu area stacked",false).toBool()) {
@@ -259,37 +304,16 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
       x[i] = i;
     }
 
-    // check if using spline
-    QVector<QVector<double>> splineValues;
     QVector<QVector<double>> splineXValues;
     bool smooth = settings->value("smoothGraphs", false).toBool();
-    if (smooth) {
-        // redo all point positions for y using cSpline
-        for(int i=0; i<2; i++) {
-            if (scaled.at(i).empty()) {
-                continue;
-            }
-
-            std::vector<double> origX = x.toStdVector();
-            std::vector<double> origY = scaled.at(i).toStdVector();
-            raven::cSpline spline(origX,origY);
-
-            if(spline.IsError()!=raven::cSpline::e_error::no_error) {
-                std::cerr << "Spline error [network] " << spline.IsError() << std::endl;
-            }
-
-            QVector<double> splineY, splineX;
-
-            spline.Draw([&splineY, &splineX](double xval, double yval) mutable {
-                splineY.append(yval);
-                splineX.append(xval);
-            },x.length()*5);
-
-            splineValues.push_back(splineY);
-            splineXValues.push_back(splineX);
+    QPair<QVector<QVector<double>>, qcustomplotCpuVector> data;
+    if(smooth) {
+        data = generateSpline("network", x, *plotting);
+        if (!data.second.empty() && !data.second.at(0).empty()) {
+            plotting = &data.second;
+            x = data.first.at(0);
         }
-
-        plotting = &splineValues;
+        splineXValues = data.first;
     }
 
     QString colours[] = {
@@ -300,9 +324,6 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
         networkPlot->addGraph();
         networkPlot->graph(i)->setPen(QPen(colourHelper::createColourFromSettings(settings, colours[i],
                                                                                   resourcesThread->getColourDefaults()[colours[i]].array)));
-        if (smooth) {
-            x = splineXValues[0];
-        }
         networkPlot->graph(i)->setData(x, plotting->at(i));
     }
 

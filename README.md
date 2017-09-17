@@ -4,16 +4,28 @@ Qt based replacement for the gnome system montior on Linux
 
 ## Compiling
 
-Qmake can be used to directly build the project as long as all dependancies are met
+Qmake can be used to directly build the project as long as all dependancies are met.
 
-Dependancies
-------------
+`qmake && make; make install`
 
-System monitor depends on libprocps, this can be installed on debian
-based systems from the package libprocps-dev.
+The program uses C++14 and pthreads, g++ is recommended.
 
-Please use libprocps6 is available. Versions lower than 2:2.3.12 are
-known to cause sigsegv.
+## Dependancies
+
+Qt5 must be installed to use system monitor.
+
+### Compiling
+
+Compiling depends on the following:
+
+* libprocps-dev
+* libeigen3-dev
+
+### Running
+
+Running the program depends on the following:
+
+* libprocps6
 
 ## References
 

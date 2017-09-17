@@ -202,7 +202,6 @@ void fileSystemWorker::updateTable()
 
     std::vector<disk> disks = readMtabDisks();
 
-    // http://stackoverflow.com/questions/4965355/converting-statvfs-to-percentage-free-correctly
     fillDiskStructures(disks);
 
     // delete the objects we created with new before we assign to prevent leaks

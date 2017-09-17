@@ -305,7 +305,10 @@ double memoryConverter::roundDouble(double input, unsigned int prec)
     return std::roundf(std::pow(10, prec) * input) / std::pow(10, prec);
 }
 
-// from http://stackoverflow.com/questions/15165502/double-to-string-without-scientific-notation-or-trailing-zeros-efficiently
+/* from http://stackoverflow.com/questions/15165502/double-to-string-without-scientific-notation-or-trailing-zeros-efficiently
+ * User https://stackoverflow.com/users/13005/steve-jessop has given this snippet under a
+ * "a non-exclusive perpetual license to use, distribute and modify them, and to distribute modifications,
+ * under any license or none, with or without attribution."
 /**
  * @brief dbl2str Convert a double to a string while discarding trailing 0's produced from just casting. Taken from SO!
  * @param d The double to convert to a string

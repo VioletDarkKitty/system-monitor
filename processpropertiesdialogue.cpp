@@ -87,7 +87,7 @@ void processPropertiesDialogue::updateTableData()
     PROCTAB *tab = openproc(PROC_PID | PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_FILLUSR | PROC_FILLNS);
     proc_t* p; // Don't fill the proc_t struct with any info
 
-    tab->pids = (pid_t*)malloc(sizeof(pid_t*)*2); // PROCTAB should clean this up when closeproc is called
+    tab->pids = (pid_t*)malloc(sizeof(pid_t)*2); // PROCTAB should clean this up when closeproc is called
     tab->pids[0] = processID;
     tab->pids[1] = 0; // The array should be 0 terminated
 

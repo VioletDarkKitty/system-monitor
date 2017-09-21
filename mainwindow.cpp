@@ -128,7 +128,7 @@ void MainWindow::updateCpuAreaInfo(const QVector<double> &input)
     }
 }
 
-QPair<QVector<QVector<double>>, qcustomplotCpuVector> MainWindow::generateSpline(QString name, QVector<double> &x, const QVector<QVector<double>> &y)
+QPair<QVector<QVector<double>>, qcustomplotCpuVector> MainWindow::generateSpline(QString name, QVector<double> &x, const QVector<QVector<double>> &y, bool setMax)
 {
     //static QHash<QString, QVector<QVector<double>>> interpolationCache;
 
@@ -173,7 +173,7 @@ QPair<QVector<QVector<double>>, qcustomplotCpuVector> MainWindow::generateSpline
             }*/
 
             double value = spline(xVal);
-            if (value > 100) {
+            if (value > 100 && setMax) {
                 value = 100;
             }
             splineY.append(value);
@@ -209,7 +209,7 @@ void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)
     bool smooth = settings->value("smoothGraphs", false).toBool();
     QPair<QVector<QVector<double>>, qcustomplotCpuVector> data;
     if(smooth) {
-        data = generateSpline("cpu", x, *values);
+        data = generateSpline("cpu", x, *values, true);
         if (!data.second.empty() && !data.second.at(0).empty()) {
             values = &data.second;
             x = data.first.at(0);

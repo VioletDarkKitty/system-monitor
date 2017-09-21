@@ -60,7 +60,7 @@ private:
     QGridLayout *cpuInfoArea;
     void updateCpuAreaInfo(const QVector<double> &input);
     QHash<QString, struct__intArrayHolder> defaultCpuColours; /// TODO: use qcolor?
-    QPair<QVector<QVector<double>>, QVector<QVector<double>>> generateSpline(QString name, QVector<double> &x, const QVector<QVector<double>> &y);
+    QPair<QVector<QVector<double>>, qcustomplotCpuVector> generateSpline(QString name, QVector<double> &x, const QVector<QVector<double>> &y, bool setMax = false);
 };
 
 #endif // MAINWINDOW_H

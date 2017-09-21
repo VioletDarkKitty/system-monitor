@@ -30,7 +30,9 @@
 #include "hashqstring.h"
 
 namespace processTools {
-    // from http://stackoverflow.com/questions/24581908/c-lstat-on-proc-pid-exe
+    /* from http://stackoverflow.com/questions/24581908/c-lstat-on-proc-pid-exe
+     * User explicitly gave allowences for using this code via email
+     */
     /**
      * @brief exe_of Obtain the executable path a process is running
      * @param pid: Process ID

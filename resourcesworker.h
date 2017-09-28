@@ -31,7 +31,7 @@
 #include <QHash>
 
 typedef QVector<QVector<double>> qcustomplotCpuVector;
-typedef QVector<QVector<memoryConverter>> qcustomplotNetworkVector;
+typedef QList<QLinkedList<memoryConverter>> qcustomplotNetworkVector;
 
 // qhash wont take an array as a value for some reason, ptr not working
 struct struct__intArrayHolder {

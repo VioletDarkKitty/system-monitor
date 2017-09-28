@@ -239,12 +239,12 @@ void resourcesWorker::updateNetwork()
 
     // prepare the data for plotting
     // this qvector is of 2 elements, the first being recieving and the second sending
-    static QVector<QVector<memoryConverter>> plottingData = QVector<QVector<memoryConverter>>();
+    static qcustomplotNetworkVector plottingData = qcustomplotNetworkVector();
 
     if (plottingData.empty()) {
         // fill with initial data
         for(int i=0; i<2; i++) {
-            plottingData.push_back(QVector<memoryConverter>());
+            plottingData.push_back(QLinkedList<memoryConverter>());
             for(unsigned int j=0; j<60; j++) {
                 plottingData[i].push_back(memoryConverter(0,memoryUnit::b,standard));
             }

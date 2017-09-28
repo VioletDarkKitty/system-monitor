@@ -265,7 +265,7 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
             switch(i) {
                 case 0:
                 if (recievingMax == nullptr || (*recievingMax) < values.at(i).at(j)) {
-                    recievingMax = &(values.at(i).at(j));
+                    recievingMax = &(values.at(i)..at(j));
                 }
                 break;
 

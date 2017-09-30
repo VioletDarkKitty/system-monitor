@@ -329,12 +329,12 @@ namespace processTools {
 
         // search /usr/share/applications for the desktop file that corresponds to the proc and get its icon
         QDirIterator dir("/usr/share/applications", QDirIterator::Subdirectories);
-        std::string desktopFile;
+        QString desktopFile;
         QIcon defaultExecutableIcon = QIcon::fromTheme("application-x-executable");
         while(dir.hasNext()) {
             if (dir.fileInfo().suffix() == "desktop") {
                 if (dir.fileName().toLower().contains(procName.toLower())) {
-                    desktopFile = dir.filePath().toStdString();
+                    desktopFile = dir.filePath();
                     break;
                 }
             }
@@ -345,14 +345,12 @@ namespace processTools {
             return defaultExecutableIcon;
         }
 
-        std::ifstream in;
-        in.open(desktopFile);
         QIcon icon = defaultExecutableIcon;
         QString iconName;
-        while(!in.eof()) {
-            std::string line;
-            std::getline(in,line);
-            iconName = QString::fromStdString(line);
+        QFile in(desktopFile);
+        in.open(QIODevice::ReadOnly);
+        while(!in.atEnd()) {
+            iconName = in.readLine();
             if (iconName.startsWith("Icon=")) {
                 iconName.remove(0,5); // remove the first 5 chars
             } else {

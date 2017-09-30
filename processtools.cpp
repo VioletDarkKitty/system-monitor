@@ -350,7 +350,7 @@ namespace processTools {
         QFile in(desktopFile);
         in.open(QIODevice::ReadOnly);
         while(!in.atEnd()) {
-            iconName = in.readLine();
+            iconName = in.readLine().trimmed();
             if (iconName.startsWith("Icon=")) {
                 iconName.remove(0,5); // remove the first 5 chars
             } else {

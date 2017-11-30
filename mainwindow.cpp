@@ -261,17 +261,17 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
 
     // find max value to scale all other values by
     for(unsigned int i=0; i<2; i++) {
-        for(int j=0; j<values.at(i).size(); j++) {
+        for(QLinkedList<memoryConverter>::const_iterator it = values.at(i).begin(); it != values.at(i).end(); it++) {
             switch(i) {
                 case 0:
-                if (recievingMax == nullptr || (*recievingMax) < values.at(i).at(j)) {
-                    recievingMax = &(values.at(i)..at(j));
+                if (recievingMax == nullptr || (*recievingMax) < *it) {
+                    recievingMax = &(*it);
                 }
                 break;
 
                 case 1:
-                if (sendingMax == nullptr || (*sendingMax) < values.at(i).at(j)) {
-                    sendingMax = &(values.at(i).at(j));
+                if (sendingMax == nullptr || (*sendingMax) < *it) {
+                    sendingMax = &(*it);
                 }
                 break;
             }
@@ -290,8 +290,8 @@ void MainWindow::updateNetworkPlotSLO(const qcustomplotNetworkVector &values)
 
     for(unsigned int i=0; i<2; i++) {
         QVector<double> scaledValuesTemp;
-        for(int j=0; j<values.at(i).size(); j++) {
-            memoryConverter temp = memoryConverter(values.at(i).at(j));
+        for(QLinkedList<memoryConverter>::const_iterator it = values.at(i).begin(); it != values.at(i).end(); it++) {
+            memoryConverter temp = memoryConverter(*it);
             temp.convertTo(scaler.getUnit());
             scaledValuesTemp.push_back(temp.getValue());
         }

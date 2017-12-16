@@ -19,7 +19,6 @@ Qt5 must be installed to use system monitor.
 Compiling depends on the following:
 
 * libprocps-dev
-* libeigen3-dev
 
 ### Running
 

@@ -22,8 +22,6 @@
 #include <iostream>
 #include "colourhelper.h"
 using namespace colourHelper;
-#include "splinefunction.h"
-#include <Eigen/Core>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -128,65 +126,15 @@ void MainWindow::updateCpuAreaInfo(const QVector<double> &input)
     }
 }
 
-QPair<QVector<QVector<double>>, qcustomplotCpuVector> MainWindow::generateSpline(QString name, QVector<double> &x, const QVector<QVector<double>> &y, bool setMax)
+QPair<QVector<QVector<double>>, qcustomplotCpuVector> MainWindow::generateSpline(QString name, QVector<double> &x, const qcustomplotCpuVector &y, bool setMax)
 {
-    //static QHash<QString, QVector<QVector<double>>> interpolationCache;
-
-    if (!y.empty() && y.at(0).size() < 5) {
-        QVector<QVector<double>> blankHolder = QVector<QVector<double>>();
-        return QPair<QVector<QVector<double>>, qcustomplotCpuVector>(blankHolder, blankHolder);
+    /// TODO stub
+    int size = y.size();
+    QVector<QVector<double>> xs;
+    for(unsigned int i=0; i < size; i++) {
+        xs.push_back(x);
     }
-
-    /// TODO: cache these
-    double len = x.size();
-    /*if (!interpolationCache.contains(name)) {
-        // prep data
-        QVector<QVector<double>> data;
-        for(int i=0; i<y.size(); i++) {
-            QVector<double> data2;
-            for(double j=0; j<len-2; j+=(3.0L / len)) {
-                data2.append(0);
-            }
-            data.append(data2);
-        }
-        interpolationCache[name] = data;
-    }*/
-
-    QVector<QVector<double>> splineValues;
-    QVector<QVector<double>> splineXValues;
-    for(int i=0; i<y.size(); i++) {
-
-        Eigen::VectorXd origX = Eigen::VectorXd::Map(x.data(), x.size());
-        Eigen::VectorXd origY = Eigen::VectorXd::Map(y.at(i).data(), y.at(i).size());
-
-        SplineFunction spline(origX, origY);
-
-        QVector<double> splineY, splineX;
-
-        for(double xVal=0; xVal<len-2; xVal+=(3.0L / len)) {
-            splineX.append(xVal);
-
-            /*if (xVal < len-10) {
-                double value = interpolationCache[name].at(i).at(xVal);
-                splineY.append(value);
-                continue;
-            }*/
-
-            double value = spline(xVal);
-            if (value > 100 && setMax) {
-                value = 100;
-            }
-            splineY.append(value);
-            /*interpolationCache[name][i].pop_front();
-            interpolationCache[name][i].push_back(value);*/
-        }
-
-        splineValues.push_back(splineY);
-        splineXValues.push_back(splineX);
-
-    }
-
-    return QPair<QVector<QVector<double>>, qcustomplotCpuVector>(splineXValues, splineValues);
+    return QPair<QVector<QVector<double>>, qcustomplotCpuVector>(xs, y);
 }
 
 void MainWindow::updateCpuPlotSLO(const qcustomplotCpuVector &input)

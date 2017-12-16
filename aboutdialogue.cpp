@@ -25,6 +25,8 @@ AboutDialogue::AboutDialogue(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    this->setWindowFlags(Qt::Window);
+
     QPushButton* closeButton = this->findChild<QPushButton*>("closeButton");
     connect(closeButton,SIGNAL(clicked(bool)),this,SLOT(close()));
 

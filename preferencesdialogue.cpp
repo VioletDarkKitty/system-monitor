@@ -27,6 +27,8 @@ PreferencesDialogue::PreferencesDialogue(QWidget *parent, QSettings *settings) :
     ui->setupUi(this);
     this->settings = settings;
 
+    this->setWindowFlags(Qt::Window);
+
     QCheckBox *divideByCpuCheckbox = this->findChild<QCheckBox*>("divideByCpuCheckbox");
     connect(divideByCpuCheckbox,SIGNAL(clicked(bool)),this,SLOT(toggleDivideCpuCheckbox(bool)));
     divideByCpuCheckbox->setChecked(settings->value("divide process cpu by cpu count", false).toBool());

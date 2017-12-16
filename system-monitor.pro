@@ -62,15 +62,14 @@ HEADERS  += mainwindow.h \
     preferencesdialogue.h \
     hashqstring.h \
     memoryconverter.h \
-    colourhelper.h \
-    splinefunction.h
+    colourhelper.h
 
 FORMS    += mainwindow.ui \
     processpropertiesdialogue.ui \
     aboutdialogue.ui \
     preferencesdialogue.ui
 
-QMAKE_CXXFLAGS += -std=c++14 -Wall $$system(pkg-config --cflags eigen3)
+QMAKE_CXXFLAGS += -std=c++14 -Wall
 LIBS += -L"libprocps" -lprocps -lstdc++fs
 
 DISTFILES += \

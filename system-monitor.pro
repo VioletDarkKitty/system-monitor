@@ -70,7 +70,7 @@ FORMS    += mainwindow.ui \
     preferencesdialogue.ui
 
 QMAKE_CXXFLAGS += -std=c++14 -Wall
-LIBS += -L"libprocps" -lprocps -lstdc++fs
+LIBS += -L"libprocps6" -lprocps -lstdc++fs
 
 DISTFILES += \
     system-monitor.desktop

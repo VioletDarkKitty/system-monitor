@@ -185,6 +185,7 @@ bool processInformationWorker::shouldHideProcess(unsigned int pid)
  */
 void processInformationWorker::filterProcesses(QString filter)
 {
+    filter = filter.toLower();
     // loop over the table and hide items which do not match the search term given
     // only check col 0 (process name)
     for(int i = 0; i < processesTable->rowCount(); i++)
@@ -193,8 +194,11 @@ void processInformationWorker::filterProcesses(QString filter)
         /// TODO: find a better fix for this, can't check using QTableWidget
         /// so just check the PID manually
         if (!shouldHideProcess(getpwnam(processesTable->item(i,1)->text().toStdString().c_str())->pw_uid)) {
-            QTableWidgetItem* item = processesTable->item(i,0); // process name
-            processesTable->setRowHidden(i, !(item->text().toLower().contains(filter.toLower())));
+            QTableWidgetItem* name = processesTable->item(i,0); // process name
+            QTableWidgetItem* pid = processesTable->item(i, 3);
+            bool nameContains = name->text().toLower().contains(filter);
+            bool cmdLineContains = getProcessCmdline(pid->text().toInt()).toLower().contains(filter);
+            processesTable->setRowHidden(i, (!nameContains && !cmdLineContains));
         }
     }
 }
@@ -220,13 +224,8 @@ void processInformationWorker::updateTable() {
     if (prevProcs.size()>0) {
         // we have previous proc info
         for(auto &newItr:processes) {
-            for(auto &prevItr:prevProcs) {
-                if (newItr.first == prevItr.first) {
-                    // PID matches, calculate the cpu
-                    newItr.second.pcpu = (unsigned int)calculateCPUPercentage(&prevItr.second,&newItr.second,totalCpuTime);
-                    break;
-                }
-            }
+            auto prevItr = prevProcs[newItr.first];
+            newItr.second.pcpu = (unsigned int)calculateCPUPercentage(&prevItr, &newItr.second, totalCpuTime);
         }
     }
     // update the cpu time for next loop

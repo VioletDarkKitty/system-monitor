@@ -61,6 +61,7 @@ processInformationWorker::processInformationWorker(QObject *parent, QSettings *s
     processesTable->addActions(rightClickActions);
 
     filterCheckbox = mainTabs->findChild<QCheckBox*>("processesFilterCheckbox");
+    connect(filterCheckbox, SIGNAL(toggled(bool)), this, SLOT(filterCheckboxToggled(bool)));
     searchField = mainTabs->findChild<QLineEdit*>("processesSearchField");
 
     connect(searchField,SIGNAL(textChanged(QString)),this,SLOT(filterProcesses(QString)));
@@ -73,6 +74,8 @@ processInformationWorker::processInformationWorker(QObject *parent, QSettings *s
     createProcessesView();
 
     this->settings = settings;
+
+    filterCheckbox->setChecked(this->settings->value("processesFilterCheckbox", true).toBool());
 }
 
 /**
@@ -84,6 +87,11 @@ void processInformationWorker::showProcessProperties()
     processPropertiesDialogue* properties = new processPropertiesDialogue((QWidget*)mainWindow, selectedRowInfoID, settings);
     properties->show();
     properties->exec();
+}
+
+void processInformationWorker::filterCheckboxToggled(bool checked)
+{
+    this->settings->setValue("processesFilterCheckbox", checked);
 }
 
 /**

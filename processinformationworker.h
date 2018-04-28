@@ -45,6 +45,7 @@ private slots:
     void filterProcesses(QString filter);
     void changeCurrentTableRowSelection(QModelIndex current);
     void showProcessProperties();
+    void filterCheckboxToggled(bool checked);
 
 signals:
     void updateTableData();

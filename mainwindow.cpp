@@ -31,6 +31,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     settings = new QSettings("system-monitor","system-monitor");
 
+    QDataStream geometry(settings->value("mainWindowGeometry", this->geometry()).toByteArray());
+    QRect geomRect;
+    geometry >> geomRect;
+    this->setGeometry(geomRect);
+
     processesThread = new processInformationWorker(this, settings);
     resourcesThread = new resourcesWorker(this, settings);
     filesystemThread = new fileSystemWorker(this, settings);
@@ -73,6 +78,16 @@ MainWindow::~MainWindow()
     delete filesystemThread;
     delete mainTabs;
     delete settings;
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+   QMainWindow::resizeEvent(event);
+
+   QByteArray data;
+   QDataStream geometry(&data, QIODevice::WriteOnly);
+   geometry << this->geometry();
+   settings->setValue("mainWindowGeometry", data);
 }
 
 void MainWindow::updateCpuAreaInfo(const QVector<double> &input)

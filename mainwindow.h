@@ -40,6 +40,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+
 public slots:
     void updateCpuPlotSLO(const qcustomplotCpuVector &input);
     void updateNetworkPlotSLO(const qcustomplotNetworkVector &values);

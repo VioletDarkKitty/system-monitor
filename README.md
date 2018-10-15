@@ -29,3 +29,7 @@ Running the program depends on the following:
 ## References
 
 * QCustomPlot - [http://qcustomplot.com/](http://qcustomplot.com/)
+
+## Contributing
+
+See [guide](CONTRIBUTING.md)
